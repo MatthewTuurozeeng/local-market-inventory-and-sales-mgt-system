@@ -1,0 +1,24 @@
+<svg width="1600" height="1000" viewBox="0 0 1600 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#E6F4FF"/>
+      <stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#734A3B" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#593F24" stop-opacity="0.9"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.75" cy="0.2" r="0.8">
+      <stop offset="0%" stop-color="#E6F4FF" stop-opacity="0.9"/>
+      <stop offset="60%" stop-color="#E6F4FF" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#E6F4FF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#sky)"/>
+  <circle cx="1200" cy="220" r="420" fill="url(#glow)"/>
+  <path d="M0 650C180 580 300 560 520 590C750 620 980 760 1240 780C1440 795 1560 730 1600 700V1000H0V650Z" fill="#122E16" fill-opacity="0.12"/>
+  <path d="M0 720C200 660 360 640 560 680C770 720 980 860 1260 880C1450 895 1560 830 1600 800V1000H0V720Z" fill="url(#accent)" fill-opacity="0.18"/>
+  <path d="M0 780C220 730 420 720 620 760C840 800 1030 920 1300 940C1470 952 1560 910 1600 880V1000H0V780Z" fill="#593F24" fill-opacity="0.12"/>
+  <circle cx="320" cy="180" r="120" fill="#734A3B" fill-opacity="0.08"/>
+  <circle cx="420" cy="300" r="80" fill="#734A3B" fill-opacity="0.1"/>
+</svg>
