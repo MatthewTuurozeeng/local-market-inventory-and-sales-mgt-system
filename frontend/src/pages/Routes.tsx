@@ -6,6 +6,7 @@ import Home from "./Home.tsx";
 import HowItWorks from "./HowItWorks.tsx";
 import Login from "./Login.tsx";
 import NotFound from "./NotFound.tsx";
+import Signup from "./Signup.tsx";
 
 export default function AppRoutes() {
   return (
@@ -15,6 +16,7 @@ export default function AppRoutes() {
       <Route path="/how-it-works" element={<HowItWorks />} />
       <Route path="/about" element={<About />} />
       <Route path="/login" element={<Login />} />
+  <Route path="/signup" element={<Signup />} />
       <Route path="/get-started" element={<GetStarted />} />
       <Route path="*" element={<NotFound />} />
     </Routes>

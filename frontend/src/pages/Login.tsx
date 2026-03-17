@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function Login() {
   return (
     <div className="page-content">
@@ -19,6 +21,9 @@ export default function Login() {
             </label>
             <button className="button solid">Login</button>
           </div>
+          <p className="form-helper">
+            Don’t have an account? <Link to="/signup">Create one</Link>
+          </p>
         </div>
       </section>
     </div>

@@ -308,6 +308,26 @@ a {
   gap: 1rem;
 }
 
+.form-section {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 16px;
+  background: rgba(230, 244, 255, 0.6);
+  border: 1px solid rgba(18, 46, 22, 0.08);
+}
+
+.form-section h3 {
+  color: var(--earth);
+  font-size: 1rem;
+}
+
+.form-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
 .form-stack label {
   display: grid;
   gap: 0.35rem;
@@ -319,6 +339,54 @@ a {
   border: 1px solid rgba(18, 46, 22, 0.2);
   padding: 0.75rem 1rem;
   font-family: inherit;
+}
+
+.form-stack select {
+  border-radius: 12px;
+  border: 1px solid rgba(18, 46, 22, 0.2);
+  padding: 0.75rem 1rem;
+  font-family: inherit;
+  background-color: #ffffff;
+  color: inherit;
+}
+
+.checkbox-group {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.form-helper {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: rgba(18, 46, 22, 0.7);
+}
+
+.form-helper a {
+  color: var(--coffee);
+  font-weight: 600;
+}
+
+.form-alert {
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.form-alert.error {
+  color: #8b2c2c;
+}
+
+.form-alert.success {
+  color: #1f6b3a;
 }
 
 .panel h3 {
