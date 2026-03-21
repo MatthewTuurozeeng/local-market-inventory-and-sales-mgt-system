@@ -6,7 +6,7 @@ export default function About() {
           <p className="eyebrow">About</p>
           <h2>Designed with local commerce in mind.</h2>
           <p>
-            We’re building a lightweight, mobile-first tool for market vendors across
+            We are building a lightweight, mobile-first tool for market vendors across
             Ghana. It works on low-end phones, supports offline workflows, and keeps
             data secure so you can focus on your customers.
           </p>

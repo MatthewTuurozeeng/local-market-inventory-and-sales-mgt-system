@@ -6,9 +6,9 @@ export default function NotFound() {
       <section className="section">
         <div className="section-title">
           <p className="eyebrow">404</p>
-          <h2>We couldn’t find that page.</h2>
+          <h2>We couldn't find that page.</h2>
         </div>
-        <p>Try heading back to the homepage.</p>
+        <p>Head back to homepage.</p>
         <Link className="button solid" to="/">
           Go home
         </Link>

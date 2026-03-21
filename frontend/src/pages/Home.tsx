@@ -46,7 +46,7 @@ export default function Home() {
           </div>
           <div className="hero-card">
             <div className="card-header">
-              <h4>Today’s Snapshot</h4>
+              <h4>Today's Snapshot</h4>
               <span>Tue</span>
             </div>
             <div className="card-grid">

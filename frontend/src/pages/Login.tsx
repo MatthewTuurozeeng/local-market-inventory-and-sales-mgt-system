@@ -22,7 +22,10 @@ export default function Login() {
             <button className="button solid">Login</button>
           </div>
           <p className="form-helper">
-            Don’t have an account? <Link to="/signup">Create one</Link>
+            <Link to="/reset-password">Forgot password?</Link>
+          </p>
+          <p className="form-helper">
+            Don't have an account? <Link to="/signup">Create one</Link>
           </p>
         </div>
       </section>
