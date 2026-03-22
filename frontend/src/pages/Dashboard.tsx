@@ -1,0 +1,632 @@
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  adjustStock,
+  createProduct,
+  createSale,
+  getProducts,
+  getProfile,
+  getSales,
+  getSummary,
+  hasToken,
+  logout,
+  type Product,
+  type SalesSummary,
+  type VendorProfile,
+} from "../lib/api.ts";
+
+const emptySummary: SalesSummary = { revenue: 0, units: 0, salesCount: 0 };
+const useMocks = import.meta.env.VITE_USE_MOCKS === "true";
+
+const mockProfile: VendorProfile = {
+  id: "demo-vendor",
+  firstName: "Ama",
+  lastName: "Mensah",
+  email: "ama@market.com",
+  businessName: "Ama Fresh Produce",
+  location: "Makola Market, Accra",
+  primaryProducts: "Tomatoes, onions, peppers",
+  staffCount: 3,
+  productTypes: ["Fresh produce", "Spices & condiments"],
+  otherProductTypes: "Citrus",
+};
+
+const mockProducts: Product[] = [
+  {
+    id: "prod-1",
+    name: "Tomatoes",
+    category: "Fresh produce",
+    unit: "crate",
+    price: 180,
+    stock: 12,
+    lowStockThreshold: 5,
+  },
+  {
+    id: "prod-2",
+    name: "Red onions",
+    category: "Fresh produce",
+    unit: "bag",
+    price: 95,
+    stock: 4,
+    lowStockThreshold: 6,
+  },
+  {
+    id: "prod-3",
+    name: "Chili peppers",
+    category: "Spices & condiments",
+    unit: "kg",
+    price: 32,
+    stock: 18,
+    lowStockThreshold: 8,
+  },
+];
+
+const mockSales = [
+  {
+    id: "sale-1",
+    productId: "prod-1",
+    quantity: 2,
+    unitPrice: 180,
+    total: 360,
+    soldAt: new Date().toISOString(),
+  },
+  {
+    id: "sale-2",
+    productId: "prod-2",
+    quantity: 1,
+    unitPrice: 95,
+    total: 95,
+    soldAt: new Date(Date.now() - 86400000).toISOString(),
+  },
+  {
+    id: "sale-3",
+    productId: "prod-3",
+    quantity: 6,
+    unitPrice: 32,
+    total: 192,
+    soldAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+  },
+];
+
+export default function Dashboard() {
+  const navigate = useNavigate();
+  const [profile, setProfile] = useState<VendorProfile | null>(null);
+  const [summary, setSummary] = useState<SalesSummary>(emptySummary);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [sales, setSales] = useState<
+    { id: string; productId: string; quantity: number; unitPrice: number; total: number; soldAt: string }[]
+  >([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [productForm, setProductForm] = useState({
+    name: "",
+    category: "",
+    unit: "",
+    price: "",
+    stock: "",
+    lowStockThreshold: "5",
+  });
+  const [saleForm, setSaleForm] = useState({
+    productId: "",
+    quantity: "",
+    unitPrice: "",
+  });
+  const [stockForm, setStockForm] = useState({ productId: "", delta: "" });
+
+  const productMap = useMemo(
+    () => new Map(products.map((product) => [product.id, product])),
+    [products]
+  );
+
+  const dailyRevenue = useMemo(() => {
+    const today = new Date();
+    const days = Array.from({ length: 7 }, (_, index) => {
+      const date = new Date(today);
+      date.setDate(today.getDate() - (6 - index));
+      const dateKey = date.toISOString().slice(0, 10);
+      return {
+        label: date.toLocaleDateString("en-GH", { month: "short", day: "numeric" }),
+        dateKey,
+        revenue: 0,
+      };
+    });
+
+    sales.forEach((sale) => {
+      const saleKey = sale.soldAt?.slice(0, 10);
+      const bucket = days.find((day) => day.dateKey === saleKey);
+      if (bucket) {
+        bucket.revenue += Number(sale.total);
+      }
+    });
+
+    return days;
+  }, [sales]);
+
+  const topProducts = useMemo(() => {
+    const totals = new Map<string, number>();
+    sales.forEach((sale) => {
+      totals.set(
+        sale.productId,
+        (totals.get(sale.productId) || 0) + Number(sale.total)
+      );
+    });
+    return Array.from(totals.entries())
+      .map(([productId, total]) => ({
+        productId,
+        name: productMap.get(productId)?.name ?? "Unknown",
+        total,
+      }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 5);
+  }, [productMap, sales]);
+
+  const maxDailyRevenue = Math.max(
+    1,
+    ...dailyRevenue.map((day) => day.revenue)
+  );
+  const maxTopRevenue = Math.max(1, ...topProducts.map((item) => item.total));
+
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat("en-GH", {
+      style: "currency",
+      currency: "GHS",
+      maximumFractionDigits: 2,
+    }).format(value || 0);
+
+  const loadData = async () => {
+    if (useMocks) {
+      const mockSummary = mockSales.reduce(
+        (acc, sale) => ({
+          revenue: acc.revenue + Number(sale.total),
+          units: acc.units + Number(sale.quantity),
+          salesCount: acc.salesCount + 1,
+        }),
+        { revenue: 0, units: 0, salesCount: 0 }
+      );
+      setProfile(mockProfile);
+      setSummary(mockSummary);
+      setProducts(mockProducts);
+      setSales(mockSales);
+      setLoading(false);
+      return;
+    }
+    if (!hasToken()) {
+      navigate("/login");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      const [profileData, summaryData, productsData, salesData] = await Promise.all([
+        getProfile(),
+        getSummary(),
+        getProducts(),
+        getSales(),
+      ]);
+      setProfile(profileData);
+      setSummary(summaryData.summary ?? emptySummary);
+      setProducts(productsData.products ?? []);
+      setSales(salesData.sales ?? []);
+    } catch (err) {
+      setError((err as Error).message || "Unable to load dashboard data.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  const handleProductSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError("");
+    try {
+      await createProduct({
+        name: productForm.name,
+        category: productForm.category,
+        unit: productForm.unit,
+        price: Number(productForm.price),
+        stock: Number(productForm.stock),
+        lowStockThreshold: Number(productForm.lowStockThreshold),
+      });
+      setProductForm({
+        name: "",
+        category: "",
+        unit: "",
+        price: "",
+        stock: "",
+        lowStockThreshold: "5",
+      });
+      await loadData();
+    } catch (err) {
+      setError((err as Error).message || "Unable to add product.");
+    }
+  };
+
+  const handleSaleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError("");
+    try {
+      await createSale({
+        productId: saleForm.productId,
+        quantity: Number(saleForm.quantity),
+        unitPrice: Number(saleForm.unitPrice),
+      });
+      setSaleForm({ productId: "", quantity: "", unitPrice: "" });
+      await loadData();
+    } catch (err) {
+      setError((err as Error).message || "Unable to record sale.");
+    }
+  };
+
+  const handleStockAdjust = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError("");
+    try {
+      await adjustStock(stockForm.productId, Number(stockForm.delta));
+      setStockForm({ productId: "", delta: "" });
+      await loadData();
+    } catch (err) {
+      setError((err as Error).message || "Unable to adjust stock.");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="page-content">
+        <section className="section">
+          <div className="panel">
+            <p>Loading your dashboard...</p>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  return (
+    <div className="page-content">
+      <section className="section dashboard-hero">
+        <div className="dashboard-header">
+          <div>
+            <p className="eyebrow">Vendor dashboard</p>
+            <h2>{profile ? `Welcome, ${profile.firstName}` : "Welcome back"}.</h2>
+            <p className="subtext">
+              Track inventory, record sales, and stay ahead of low-stock alerts.
+            </p>
+          </div>
+          <div className="dashboard-actions">
+            <button className="button outline" onClick={handleLogout} type="button">
+              Logout
+            </button>
+          </div>
+        </div>
+        {error && <p className="form-alert error">{error}</p>}
+        <div className="dashboard-cards">
+          <div className="panel dashboard-card">
+            <p>Total revenue</p>
+            <h3>{formatCurrency(summary.revenue)}</h3>
+          </div>
+          <div className="panel dashboard-card">
+            <p>Units sold</p>
+            <h3>{summary.units}</h3>
+          </div>
+          <div className="panel dashboard-card">
+            <p>Sales recorded</p>
+            <h3>{summary.salesCount}</h3>
+          </div>
+        </div>
+      </section>
+
+      <section className="section dashboard-analytics">
+        <div className="panel">
+          <h3>Sales activity (last 7 days)</h3>
+          <div className="chart-list">
+            {dailyRevenue.map((day) => {
+              const percent = Math.round((day.revenue / maxDailyRevenue) * 100);
+              return (
+                <div className="chart-row" key={day.dateKey}>
+                  <span className="chart-label">{day.label}</span>
+                  <div className="chart-track">
+                    <div
+                      className="chart-fill"
+                      style={{ width: day.revenue === 0 ? 0 : `${Math.max(6, percent)}%` }}
+                    ></div>
+                  </div>
+                  <span className="chart-value">{formatCurrency(day.revenue)}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="panel">
+          <h3>Top products by revenue</h3>
+          <div className="chart-list">
+            {topProducts.length === 0 && <p>No sales yet to analyze.</p>}
+            {topProducts.map((item) => {
+              const percent = Math.round((item.total / maxTopRevenue) * 100);
+              return (
+                <div className="chart-row" key={item.productId}>
+                  <span className="chart-label">{item.name}</span>
+                  <div className="chart-track">
+                    <div
+                      className="chart-fill"
+                      style={{ width: item.total === 0 ? 0 : `${Math.max(6, percent)}%` }}
+                    ></div>
+                  </div>
+                  <span className="chart-value">{formatCurrency(item.total)}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="section dashboard-grid">
+        <div className="panel">
+          <h3>Inventory overview</h3>
+          <div className="table-wrapper">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Category</th>
+                  <th>Unit</th>
+                  <th>Price</th>
+                  <th>Stock</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {products.length === 0 && (
+                  <tr>
+                    <td colSpan={6}>No products yet. Add your first item.</td>
+                  </tr>
+                )}
+                {products.map((product) => {
+                  const lowStock = product.stock <= product.lowStockThreshold;
+                  return (
+                    <tr key={product.id}>
+                      <td>{product.name}</td>
+                      <td>{product.category}</td>
+                      <td>{product.unit}</td>
+                      <td>{formatCurrency(product.price)}</td>
+                      <td>{product.stock}</td>
+                      <td>
+                        <span className={`status-pill ${lowStock ? "danger" : "ok"}`}>
+                          {lowStock ? "Low stock" : "Healthy"}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="panel">
+          <h3>Add a new product</h3>
+          <form className="form-stack" onSubmit={handleProductSubmit}>
+            <label>
+              <span>Product name</span>
+              <input
+                type="text"
+                value={productForm.name}
+                onChange={(event) =>
+                  setProductForm({ ...productForm, name: event.target.value })
+                }
+                required
+              />
+            </label>
+            <label>
+              <span>Category</span>
+              <input
+                type="text"
+                value={productForm.category}
+                onChange={(event) =>
+                  setProductForm({ ...productForm, category: event.target.value })
+                }
+                required
+              />
+            </label>
+            <label>
+              <span>Unit (e.g. crate, kg)</span>
+              <input
+                type="text"
+                value={productForm.unit}
+                onChange={(event) =>
+                  setProductForm({ ...productForm, unit: event.target.value })
+                }
+                required
+              />
+            </label>
+            <div className="form-grid">
+              <label>
+                <span>Price per unit (GHS)</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={productForm.price}
+                  onChange={(event) =>
+                    setProductForm({ ...productForm, price: event.target.value })
+                  }
+                  required
+                />
+              </label>
+              <label>
+                <span>Opening stock</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={productForm.stock}
+                  onChange={(event) =>
+                    setProductForm({ ...productForm, stock: event.target.value })
+                  }
+                  required
+                />
+              </label>
+            </div>
+            <label>
+              <span>Low stock alert threshold</span>
+              <input
+                type="number"
+                min="0"
+                value={productForm.lowStockThreshold}
+                onChange={(event) =>
+                  setProductForm({
+                    ...productForm,
+                    lowStockThreshold: event.target.value,
+                  })
+                }
+              />
+            </label>
+            <button className="button solid" type="submit">
+              Add product
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <section className="section dashboard-grid">
+        <div className="panel">
+          <h3>Record a sale</h3>
+          <form className="form-stack" onSubmit={handleSaleSubmit}>
+            <label>
+              <span>Product sold</span>
+              <select
+                value={saleForm.productId}
+                onChange={(event) =>
+                  setSaleForm({ ...saleForm, productId: event.target.value })
+                }
+                required
+              >
+                <option value="" disabled>
+                  Select a product
+                </option>
+                {products.map((product) => (
+                  <option key={product.id} value={product.id}>
+                    {product.name} ({product.stock} in stock)
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="form-grid">
+              <label>
+                <span>Quantity sold</span>
+                <input
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={saleForm.quantity}
+                  onChange={(event) =>
+                    setSaleForm({ ...saleForm, quantity: event.target.value })
+                  }
+                  required
+                />
+              </label>
+              <label>
+                <span>Unit price (GHS)</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={saleForm.unitPrice}
+                  onChange={(event) =>
+                    setSaleForm({ ...saleForm, unitPrice: event.target.value })
+                  }
+                  required
+                />
+              </label>
+            </div>
+            <button className="button solid" type="submit">
+              Save sale
+            </button>
+          </form>
+        </div>
+
+        <div className="panel">
+          <h3>Adjust stock</h3>
+          <form className="form-stack" onSubmit={handleStockAdjust}>
+            <label>
+              <span>Product</span>
+              <select
+                value={stockForm.productId}
+                onChange={(event) =>
+                  setStockForm({ ...stockForm, productId: event.target.value })
+                }
+                required
+              >
+                <option value="" disabled>
+                  Select a product
+                </option>
+                {products.map((product) => (
+                  <option key={product.id} value={product.id}>
+                    {product.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Stock change (+/-)</span>
+              <input
+                type="number"
+                step="1"
+                value={stockForm.delta}
+                onChange={(event) =>
+                  setStockForm({ ...stockForm, delta: event.target.value })
+                }
+                required
+              />
+            </label>
+            <button className="button solid" type="submit">
+              Update stock
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="panel">
+          <h3>Recent sales</h3>
+          <div className="table-wrapper">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Qty</th>
+                  <th>Unit price</th>
+                  <th>Total</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sales.length === 0 && (
+                  <tr>
+                    <td colSpan={5}>No sales yet.</td>
+                  </tr>
+                )}
+                {sales.map((sale) => (
+                  <tr key={sale.id}>
+                    <td>{productMap.get(sale.productId)?.name ?? "Unknown"}</td>
+                    <td>{sale.quantity}</td>
+                    <td>{formatCurrency(sale.unitPrice)}</td>
+                    <td>{formatCurrency(sale.total)}</td>
+                    <td>{new Date(sale.soldAt).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}

@@ -1,11 +1,33 @@
 import type { ReactNode } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { hasToken, logout } from "../lib/api.ts";
 
 type LayoutProps = {
   children: ReactNode;
 };
 
 export default function Layout({ children }: LayoutProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const useMocks = import.meta.env.VITE_USE_MOCKS === "true";
+  const [isAuthed, setIsAuthed] = useState(hasToken() || useMocks);
+
+  useEffect(() => {
+    setIsAuthed(hasToken() || useMocks);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const handler = () => setIsAuthed(hasToken() || useMocks);
+    window.addEventListener("storage", handler);
+    return () => window.removeEventListener("storage", handler);
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    setIsAuthed(false);
+    navigate("/login");
+  };
   return (
     <div className="page">
       <header className="site-header">
@@ -41,22 +63,40 @@ export default function Layout({ children }: LayoutProps) {
             </NavLink>
           </div>
           <div className="nav-actions">
-            <NavLink
-              to="/login"
-              className={({ isActive }: { isActive: boolean }) =>
-                `button ghost${isActive ? " active" : ""}`
-              }
-            >
-              Login
-            </NavLink>
-            <NavLink
-              to="/get-started"
-              className={({ isActive }: { isActive: boolean }) =>
-                `button solid${isActive ? " active" : ""}`
-              }
-            >
-              Get Started
-            </NavLink>
+            {isAuthed ? (
+              <>
+                <NavLink
+                  to="/dashboard"
+                  className={({ isActive }: { isActive: boolean }) =>
+                    `button outline${isActive ? " active" : ""}`
+                  }
+                >
+                  Dashboard
+                </NavLink>
+                <button className="button ghost" type="button" onClick={handleLogout}>
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <NavLink
+                  to="/login"
+                  className={({ isActive }: { isActive: boolean }) =>
+                    `button ghost${isActive ? " active" : ""}`
+                  }
+                >
+                  Login
+                </NavLink>
+                <NavLink
+                  to="/get-started"
+                  className={({ isActive }: { isActive: boolean }) =>
+                    `button solid${isActive ? " active" : ""}`
+                  }
+                >
+                  Get Started
+                </NavLink>
+              </>
+            )}
           </div>
         </nav>
       </header>

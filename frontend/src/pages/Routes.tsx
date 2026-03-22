@@ -5,9 +5,11 @@ import GetStarted from "./GetStarted.tsx";
 import Home from "./Home.tsx";
 import HowItWorks from "./HowItWorks.tsx";
 import Login from "./Login.tsx";
+import Dashboard from "./Dashboard.tsx";
 import NotFound from "./NotFound.tsx";
 import ResetPassword from "./ResetPassword.tsx";
 import Signup from "./Signup.tsx";
+import ProtectedRoute from "../components/ProtectedRoute.tsx";
 
 export default function AppRoutes() {
   return (
@@ -17,8 +19,16 @@ export default function AppRoutes() {
       <Route path="/how-it-works" element={<HowItWorks />} />
       <Route path="/about" element={<About />} />
       <Route path="/login" element={<Login />} />
-    <Route path="/signup" element={<Signup />} />
-    <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/get-started" element={<GetStarted />} />
       <Route path="*" element={<NotFound />} />
     </Routes>

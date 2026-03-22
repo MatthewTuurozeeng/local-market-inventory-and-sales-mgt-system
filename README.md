@@ -10,9 +10,9 @@ A student software engineering project that helps Ghanaian market vendors manage
 - Analytics dashboard (top sellers, trends)
 
 ## Tech Stack
-- **Frontend:** React (mobile‑first web)
+- **Frontend:** Vite + React + TypeScript
 - **Backend:** Node.js + Express
-- **Database:** MongoDB (Atlas)
+- **Database:** MongoDB (local or Atlas)
 - **Auth:** JWT
 - **CI/CD:** GitHub Actions
 
@@ -21,12 +21,36 @@ A student software engineering project that helps Ghanaian market vendors manage
 - `docs/backlog.md` — Product backlog with epics & story points
 - `docs/api-spec.md` — API endpoints and schemas
 
-## Getting Started 
-> This repo currently contains project planning artifacts. The landing page scaffold is now available in `frontend/`.
+## Getting Started
+This repo now includes both the frontend and backend apps.
 
-When implementation begins, the repo will include:
-- `frontend/` React app (landing page scaffolded)
-- `backend/` Express API
+### Frontend
+```zsh
+cd frontend
+npm install
+npm run dev
+```
+
+### Backend
+```zsh
+cd backend
+npm install
+cp .env.example .env
+npm run dev
+```
+
+### Seed sample data (fixed login)
+```zsh
+cd backend
+npm run seed
+```
+
+Sample login:
+- Email: `vendor@market.com`
+- Password: `Test@1234`
+
+### Mock dashboard data (optional)
+Set `VITE_USE_MOCKS=true` in `frontend/.env` to show hardcoded dashboard data without logging in.
 
 ##  Definition of Done (DoD)
 - Feature implemented and tested
@@ -47,16 +71,9 @@ When implementation begins, the repo will include:
 
 # Frontend (Landing Page)
 
-This folder contains a Vite + React landing page for the Local Market Inventory & Sales Management System.
-
-## Quick start
-```zsh
-npm install
-npm run dev
-```
+The landing page lives in `frontend/` with shared styles in `src/index.css`.
 
 ## Notes
-- The landing page lives in `src/App.jsx` with shared styles in `src/index.css`.
 - Color palette: #734A3B, #593F24, #E6F4FF, #122E16.
 ## License
 Student project for CS 415 (Software Engineering).
