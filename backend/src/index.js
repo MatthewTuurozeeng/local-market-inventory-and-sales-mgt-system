@@ -7,6 +7,7 @@ import vendorRoutes from "./routes/vendors.js";
 import productRoutes from "./routes/products.js";
 import salesRoutes from "./routes/sales.js";
 import summaryRoutes from "./routes/summary.js";
+import reportRoutes from "./routes/reports.js";
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.use("/api/vendors", vendorRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/sales", salesRoutes);
 app.use("/api/summary", summaryRoutes);
+app.use("/api/reports", reportRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });

@@ -28,6 +28,30 @@ const request = async <T>(path: string, options: RequestInit = {}): Promise<T> =
   return response.json();
 };
 
+const requestBlob = async (path: string, options: RequestInit = {}): Promise<Blob> => {
+  const headers = new Headers(options.headers);
+  headers.set("Content-Type", "application/json");
+  const token = getToken();
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+
+  const response = await fetch(`${API_URL}${path}`, {
+    ...options,
+    headers,
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    const message =
+      errorBody.message ||
+      (Array.isArray(errorBody.errors) ? errorBody.errors[0]?.msg : "Request failed");
+    throw new Error(message);
+  }
+
+  return response.blob();
+};
+
 export type VendorProfile = {
   id: string;
   firstName: string;
@@ -119,6 +143,17 @@ export const createSale = async (payload: Record<string, unknown>) =>
 
 export const getSummary = async () =>
   request<{ summary: SalesSummary }>("/summary", { method: "GET" });
+
+export const downloadSalesReport = async (payload: {
+  startDate?: string;
+  endDate?: string;
+  fields: string[];
+  format: "pdf" | "xlsx";
+}) =>
+  requestBlob("/reports/sales", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 
 export const logout = () => {
   clearToken();

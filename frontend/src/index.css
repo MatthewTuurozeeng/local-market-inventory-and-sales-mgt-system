@@ -451,6 +451,112 @@ a {
   gap: 1.5rem;
 }
 
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 280px) 1fr;
+  gap: 2rem;
+  padding: 0 6vw 4rem;
+}
+
+.dashboard-sidebar {
+  background: var(--white);
+  border-radius: 24px;
+  padding: 2rem 1.75rem;
+  box-shadow: 0 18px 40px rgba(18, 46, 22, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  position: sticky;
+  top: 2rem;
+  align-self: start;
+}
+
+.sidebar-header h3 {
+  font-size: 1.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.sidebar-subtext {
+  font-size: 0.9rem;
+  color: rgba(18, 46, 22, 0.6);
+}
+
+.sidebar-nav {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.sidebar-nav button {
+  border: none;
+  background: rgba(230, 244, 255, 0.6);
+  color: var(--forest);
+  padding: 0.75rem 1rem;
+  border-radius: 14px;
+  text-align: left;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  transition: all 0.2s ease;
+}
+
+.sidebar-icon {
+  font-size: 1rem;
+  width: 1.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-nav button:hover {
+  background: rgba(115, 74, 59, 0.15);
+  color: var(--coffee);
+}
+
+.sidebar-nav button.active {
+  background: linear-gradient(120deg, rgba(115, 74, 59, 0.2), rgba(89, 63, 36, 0.15));
+  color: var(--coffee);
+  box-shadow: 0 8px 18px rgba(115, 74, 59, 0.2);
+}
+
+.sidebar-quick {
+  display: grid;
+  gap: 0.75rem;
+  background: rgba(230, 244, 255, 0.6);
+  padding: 1.2rem;
+  border-radius: 18px;
+}
+
+.sidebar-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(18, 46, 22, 0.6);
+  font-weight: 600;
+}
+
+.sidebar-metric {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+}
+
+.sidebar-metric strong {
+  color: var(--earth);
+}
+
+.dashboard-main {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.dashboard-main .section {
+  padding: 0;
+}
+
 .dashboard-hero {
   gap: 2rem;
 }
@@ -554,6 +660,20 @@ a {
   color: var(--earth);
 }
 
+.report-tips {
+  list-style: none;
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  color: rgba(18, 46, 22, 0.7);
+}
+
+.report-tips li::before {
+  content: "•";
+  margin-right: 0.6rem;
+  color: var(--coffee);
+}
+
 .status-pill {
   display: inline-flex;
   align-items: center;
@@ -586,6 +706,15 @@ a {
   .nav-actions {
     width: 100%;
     justify-content: center;
+  }
+
+  .dashboard-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-sidebar {
+    position: static;
+    width: 100%;
   }
 }
 

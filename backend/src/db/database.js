@@ -120,6 +120,52 @@ const getSalesSummary = async (vendorId) => {
   return summary[0] || { revenue: 0, units: 0, salesCount: 0 };
 };
 
+const listSalesByDateRange = async (vendorId, startDate, endDate) => {
+  const match = { vendorId: new mongoose.Types.ObjectId(vendorId) };
+  if (startDate || endDate) {
+    match.soldAt = {};
+    if (startDate) {
+      match.soldAt.$gte = startDate;
+    }
+    if (endDate) {
+      match.soldAt.$lte = endDate;
+    }
+  }
+
+  const rows = await Sale.aggregate([
+    { $match: match },
+    {
+      $lookup: {
+        from: "products",
+        localField: "productId",
+        foreignField: "_id",
+        as: "product",
+      },
+    },
+    { $unwind: { path: "$product", preserveNullAndEmptyArrays: true } },
+    {
+      $project: {
+        quantity: 1,
+        unitPrice: 1,
+        total: 1,
+        soldAt: 1,
+        productName: "$product.name",
+        productCategory: "$product.category",
+      },
+    },
+    { $sort: { soldAt: -1 } },
+  ]);
+
+  return rows.map((row) => ({
+    quantity: row.quantity,
+    unitPrice: row.unitPrice,
+    total: row.total,
+    soldAt: row.soldAt,
+    productName: row.productName || "Unknown",
+    productCategory: row.productCategory || "",
+  }));
+};
+
 export {
   createVendor,
   findVendorByEmail,
@@ -129,5 +175,6 @@ export {
   updateProductStock,
   createSale,
   listSales,
+  listSalesByDateRange,
   getSalesSummary,
 };
