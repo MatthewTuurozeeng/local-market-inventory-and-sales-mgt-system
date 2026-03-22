@@ -17,6 +17,7 @@ import {
   resetConfirmValidators,
   resetValidators,
 } from "../middleware/validators/authValidators.ts";
+import { sendPasswordResetEmail } from "../services/notificationService.ts";
 
 const router = express.Router();
 
@@ -26,7 +27,8 @@ router.post("/register", registerValidators, async (req: Request, res: Response)
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const existing = await findVendorByEmail(req.body.email as string);
+  const normalizedEmail = String(req.body.email).trim().toLowerCase();
+  const existing = await findVendorByEmail(normalizedEmail);
   if (existing) {
     return res.status(409).json({ message: "Email already registered" });
   }
@@ -36,7 +38,7 @@ router.post("/register", registerValidators, async (req: Request, res: Response)
     firstName: req.body.firstName as string,
     middleName: (req.body.middleName as string) || null,
     lastName: req.body.lastName as string,
-    email: req.body.email as string,
+  email: normalizedEmail,
     phone: req.body.phone as string,
     passwordHash,
     idType: req.body.idType as string,
@@ -45,7 +47,7 @@ router.post("/register", registerValidators, async (req: Request, res: Response)
     location: req.body.location as string,
     primaryProducts: req.body.primaryProducts as string,
     staffCount: Number(req.body.staffCount),
-    productTypes: JSON.stringify(req.body.productTypes),
+  productTypes: req.body.productTypes as string[],
     otherProductTypes: (req.body.otherProductTypes as string) || null,
     createdAt: new Date().toISOString(),
   });
@@ -79,7 +81,8 @@ router.post("/login", loginValidators, async (req: Request, res: Response) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const vendor = await findVendorByEmail(req.body.email as string);
+  const normalizedEmail = String(req.body.email).trim().toLowerCase();
+  const vendor = await findVendorByEmail(normalizedEmail);
   if (!vendor || !bcrypt.compareSync(req.body.password as string, vendor.passwordHash)) {
     return res.status(401).json({ message: "Invalid credentials" });
   }
@@ -113,10 +116,13 @@ router.post("/reset", resetValidators, async (req: Request, res: Response) => {
   const resetToken = randomBytes(24).toString("hex");
   const expiresAt = new Date(Date.now() + 1000 * 60 * 30).toISOString();
   await setVendorResetToken(req.body.email as string, resetToken, expiresAt);
+  const emailSent = await sendPasswordResetEmail(vendor, resetToken);
   return res.json({
-    message: "Reset link sent (demo).",
-    resetToken,
-    expiresAt,
+    message: emailSent
+      ? "Reset link sent. Check your email."
+      : "Reset link generated. Email service not configured.",
+    resetToken: emailSent ? undefined : resetToken,
+    expiresAt: emailSent ? undefined : expiresAt,
   });
 });
 

@@ -35,7 +35,7 @@ export default function Home() {
                 <p>daily sales reporting</p>
               </div>
               <div>
-                <h3>5 mins</h3>
+                <h3>3 mins</h3>
                 <p>setup time</p>
               </div>
               <div>
@@ -47,7 +47,7 @@ export default function Home() {
           <div className="hero-card">
             <div className="card-header">
               <h4>Today's Snapshot</h4>
-              <span>Tue</span>
+              <span>Sun</span>
             </div>
             <div className="card-grid">
               <div>

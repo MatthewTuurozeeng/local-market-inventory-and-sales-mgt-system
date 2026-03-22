@@ -3,10 +3,12 @@ import { validationResult } from "express-validator";
 import { authenticate } from "../middleware/auth/index.ts";
 import {
   createSale,
+  getVendorById,
   listSales,
   updateProductStock,
 } from "../models/database.ts";
 import { createSaleValidators } from "../middleware/validators/salesValidators.ts";
+import { notifyLowStock } from "../services/notificationService.ts";
 
 const router = express.Router();
 
@@ -45,7 +47,20 @@ router.post(
       soldAt: new Date().toISOString(),
     });
 
-    await updateProductStock(vendorId, req.body.productId as string, -quantity);
+    const updatedProduct = await updateProductStock(
+      vendorId,
+      req.body.productId as string,
+      -quantity
+    );
+    if (
+      updatedProduct &&
+      updatedProduct.stock <= updatedProduct.lowStockThreshold
+    ) {
+      const vendor = await getVendorById(vendorId);
+      if (vendor) {
+        await notifyLowStock(vendor, updatedProduct);
+      }
+    }
 
     return res.status(201).json({ id: sale.id });
   }

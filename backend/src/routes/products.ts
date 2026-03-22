@@ -3,9 +3,11 @@ import { validationResult } from "express-validator";
 import { authenticate } from "../middleware/auth/index.ts";
 import {
   createProduct,
+  getVendorById,
   listProducts,
   updateProductStock,
 } from "../models/database.ts";
+import { notifyLowStock } from "../services/notificationService.ts";
 import {
   createProductValidators,
   updateStockValidators,
@@ -67,7 +69,20 @@ router.patch(
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    await updateProductStock(vendorId, req.params.id, Number(req.body.delta));
+    const updatedProduct = await updateProductStock(
+      vendorId,
+      req.params.id,
+      Number(req.body.delta)
+    );
+    if (
+      updatedProduct &&
+      updatedProduct.stock <= updatedProduct.lowStockThreshold
+    ) {
+      const vendor = await getVendorById(vendorId);
+      if (vendor) {
+        await notifyLowStock(vendor, updatedProduct);
+      }
+    }
     return res.json({ message: "Stock updated" });
   }
 );

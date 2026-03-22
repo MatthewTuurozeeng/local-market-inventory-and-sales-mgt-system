@@ -7,6 +7,7 @@ export interface VendorInput {
   email: string;
   phone: string;
   passwordHash: string;
+  avatarUrl?: string | null;
   resetToken?: string | null;
   resetTokenExpires?: string | null;
   idType: string;
@@ -22,6 +23,23 @@ export interface VendorInput {
 
 export interface VendorRecord extends VendorInput {
   id: string;
+}
+
+export interface VendorUpdateInput {
+  firstName?: string;
+  middleName?: string | null;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  avatarUrl?: string | null;
+  idType?: string;
+  idNumber?: string;
+  businessName?: string;
+  location?: string;
+  primaryProducts?: string;
+  staffCount?: number;
+  productTypes?: string[];
+  otherProductTypes?: string | null;
 }
 
 export interface ProductInput {
@@ -87,9 +105,10 @@ const VendorSchema = new Schema<VendorDocument>({
   firstName: { type: String, required: true },
   middleName: { type: String },
   lastName: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   phone: { type: String, required: true },
   passwordHash: { type: String, required: true },
+  avatarUrl: { type: String },
   resetToken: { type: String },
   resetTokenExpires: { type: String },
   idType: { type: String, required: true },
@@ -154,7 +173,8 @@ const createVendor = async (payload: VendorInput): Promise<string> => {
 };
 
 const findVendorByEmail = async (email: string): Promise<VendorRecord | null> => {
-  const vendor = await Vendor.findOne({ email });
+  const normalizedEmail = email.trim().toLowerCase();
+  const vendor = await Vendor.findOne({ email: normalizedEmail });
   return normalizeVendor(vendor);
 };
 
@@ -191,6 +211,25 @@ const getVendorById = async (id: string): Promise<VendorRecord | null> => {
   return normalizeVendor(vendor);
 };
 
+const updateVendor = async (
+  vendorId: string,
+  updates: VendorUpdateInput
+): Promise<VendorRecord | null> => {
+  const payload = { ...updates } as VendorUpdateInput;
+  if (payload.email) {
+    payload.email = payload.email.trim().toLowerCase();
+  }
+  const entries = Object.entries(payload).filter(([, value]) => value !== undefined);
+  if (entries.length === 0) {
+    return getVendorById(vendorId);
+  }
+  await Vendor.updateOne(
+    { _id: vendorId },
+    { $set: Object.fromEntries(entries) }
+  );
+  return getVendorById(vendorId);
+};
+
 const listProducts = async (vendorId: string): Promise<ProductRecord[]> => {
   const products = await Product.find({ vendorId }).sort({ createdAt: -1 });
   return products
@@ -214,14 +253,15 @@ const updateProductStock = async (
   vendorId: string,
   productId: string,
   delta: number
-): Promise<void> => {
+): Promise<ProductRecord | null> => {
   const product = await Product.findOne({ _id: productId, vendorId });
   if (!product) {
-    return;
+    return null;
   }
   const nextStock = Math.max(0, Number(product.stock) + Number(delta));
   product.stock = Number(nextStock.toFixed(2));
   await product.save();
+  return normalizeProduct(product) as ProductRecord;
 };
 
 const createSale = async (
@@ -316,6 +356,7 @@ export {
   findVendorByResetToken,
   updateVendorPassword,
   getVendorById,
+  updateVendor,
   listProducts,
   createProduct,
   updateProductStock,

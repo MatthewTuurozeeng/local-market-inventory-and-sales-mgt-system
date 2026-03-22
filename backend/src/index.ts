@@ -2,6 +2,8 @@ import express, { type NextFunction, type Request, type Response } from "express
 import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
+import path from "path";
+import { fileURLToPath } from "url";
 import authRoutes from "./routes/auth.ts";
 import vendorRoutes from "./routes/vendors.ts";
 import productRoutes from "./routes/products.ts";
@@ -15,9 +17,12 @@ const app = express();
 const PORT = Number(process.env.PORT) || 4000;
 const MONGODB_URI =
   process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/local-market";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 app.use(cors({ origin: process.env.CORS_ORIGIN || "http://localhost:5173" }));
 app.use(express.json());
+app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
 app.get("/", (_req: Request, res: Response) => {
   res.json({ status: "Vendor API running" });

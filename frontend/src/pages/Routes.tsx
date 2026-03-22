@@ -6,6 +6,7 @@ import Home from "./Home.tsx";
 import HowItWorks from "./HowItWorks.tsx";
 import Login from "./Login.tsx";
 import Dashboard from "./Dashboard.tsx";
+import Profile from "./Profile.tsx";
 import NotFound from "./NotFound.tsx";
 import ResetPassword from "./ResetPassword.tsx";
 import ResetConfirm from "./ResetConfirm.tsx";
@@ -28,6 +29,14 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
           </ProtectedRoute>
         }
       />

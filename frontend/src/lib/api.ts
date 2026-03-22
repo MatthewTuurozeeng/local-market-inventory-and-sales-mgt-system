@@ -1,4 +1,5 @@
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api";
+export const API_BASE_URL = API_URL.replace(/\/api\/?$/, "");
 
 const getToken = () => localStorage.getItem("vendor_token");
 const setToken = (token: string) => localStorage.setItem("vendor_token", token);
@@ -52,11 +53,37 @@ const requestBlob = async (path: string, options: RequestInit = {}): Promise<Blo
   return response.blob();
 };
 
+const requestFormData = async <T>(path: string, formData: FormData): Promise<T> => {
+  const headers = new Headers();
+  const token = getToken();
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+
+  const response = await fetch(`${API_URL}${path}`, {
+    method: "POST",
+    body: formData,
+    headers,
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    const message =
+      errorBody.message ||
+      (Array.isArray(errorBody.errors) ? errorBody.errors[0]?.msg : "Request failed");
+    throw new Error(message);
+  }
+
+  return response.json();
+};
+
 export type VendorProfile = {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
+  phone?: string;
+  avatarUrl?: string | null;
   businessName: string;
   location: string;
   primaryProducts: string;
@@ -125,6 +152,18 @@ export const confirmPasswordReset = async (payload: {
 
 export const getProfile = async () =>
   request<VendorProfile>("/vendors/me", { method: "GET" });
+
+export const updateProfile = async (payload: Partial<VendorProfile>) =>
+  request<VendorProfile>("/vendors/me", {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+
+export const uploadAvatar = async (file: File) => {
+  const formData = new FormData();
+  formData.append("avatar", file);
+  return requestFormData<{ avatarUrl: string }>("/vendors/me/avatar", formData);
+};
 
 export const getProducts = async () =>
   request<{ products: Product[] }>("/products", { method: "GET" });
