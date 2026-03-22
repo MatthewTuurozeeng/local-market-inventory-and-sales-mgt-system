@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
+import { FiMoon, FiSun } from "react-icons/fi";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { hasToken, logout } from "../lib/api.ts";
+import { useTheme } from "../lib/theme.tsx";
 
 type LayoutProps = {
   children: ReactNode;
@@ -12,6 +14,9 @@ export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const useMocks = import.meta.env.VITE_USE_MOCKS === "true";
   const [isAuthed, setIsAuthed] = useState(hasToken() || useMocks);
+  const { theme, toggleTheme } = useTheme();
+  const themeLabel = theme === "dark" ? "Light" : "Dark";
+  const ThemeIcon = theme === "dark" ? FiSun : FiMoon;
 
   useEffect(() => {
     setIsAuthed(hasToken() || useMocks);
@@ -63,6 +68,17 @@ export default function Layout({ children }: LayoutProps) {
             </NavLink>
           </div>
           <div className="nav-actions">
+            <button
+              className="button ghost theme-toggle"
+              type="button"
+              onClick={toggleTheme}
+              aria-label={`Switch to ${themeLabel.toLowerCase()} mode`}
+            >
+              <span className="theme-icon" aria-hidden="true">
+                <ThemeIcon />
+              </span>
+              <span>{themeLabel} Mode</span>
+            </button>
             {isAuthed ? (
               <>
                 <NavLink
