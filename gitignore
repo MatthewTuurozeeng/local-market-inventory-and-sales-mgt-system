@@ -1,20 +1,19 @@
-venv
-node_modules
-frontend/node_modules
-.DS_Store
-.env
-__pycache__
-.env
-backend/env.example
-frontend/env.example
-.env.example
-dist
-build
-coverage
-.vscode
-.idea
-.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log
+module.exports = [
+  'venv',
+  'node_modules',
+  'frontend/node_modules',
+  '.DS_Store',
+  '.env',
+  '.env.*',
+  '__pycache__',
+  'dist',
+  'build',
+  'coverage',
+  '.vscode',
+  '.idea',
+  '.log',
+  'npm-debug.log*',
+  'yarn-debug.log*',
+  'yarn-error.log*',
+  'pnpm-debug.log'
+];
