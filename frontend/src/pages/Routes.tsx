@@ -5,6 +5,7 @@ import GetStarted from "./GetStarted.tsx";
 import Home from "./Home.tsx";
 import HowItWorks from "./HowItWorks.tsx";
 import Login from "./Login.tsx";
+import PublicReport from "./PublicReport.tsx";
 import Dashboard from "./Dashboard.tsx";
 import Profile from "./Profile.tsx";
 import NotFound from "./NotFound.tsx";
@@ -40,6 +41,7 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route path="/report" element={<PublicReport />} />
       <Route path="/get-started" element={<GetStarted />} />
       <Route path="*" element={<NotFound />} />
     </Routes>

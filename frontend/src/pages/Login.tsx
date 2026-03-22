@@ -31,7 +31,7 @@ export default function Login() {
       <section className="section">
         <div className="section-title">
           <p className="eyebrow">Login</p>
-          <h2>Welcome back to Local Market.</h2>
+          <h2>Welcome back Daakye Vendor Space.</h2>
         </div>
         <div className="panel form-panel">
           <p>Sign in to continue managing your inventory and sales.</p>

@@ -1,3 +1,27 @@
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { API_BASE_URL } from "../lib/api.ts";
+
+type PublicStats = {
+  totalVendors: number;
+  totalSales: number;
+  totalUnits: number;
+  totalTransactions: number;
+  todayRevenue: number;
+  topVendorRevenueToday: number;
+  snapshotDayLabel: string;
+};
+
+const defaultStats: PublicStats = {
+  totalVendors: 0,
+  totalSales: 0,
+  totalUnits: 0,
+  totalTransactions: 0,
+  todayRevenue: 0,
+  topVendorRevenueToday: 0,
+  snapshotDayLabel: new Date().toLocaleDateString("en-GH", { weekday: "short" }),
+};
+
 const featureHighlights = [
   {
     title: "Smart Inventory",
@@ -14,6 +38,46 @@ const featureHighlights = [
 ];
 
 export default function Home() {
+  const [stats, setStats] = useState<PublicStats>(defaultStats);
+  const [statsError, setStatsError] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchStats = async () => {
+      try {
+  const response = await fetch(`${API_BASE_URL}/api/public/stats`);
+        if (!response.ok) {
+          throw new Error("Unable to load stats");
+        }
+        const data = (await response.json()) as PublicStats;
+        if (isMounted) {
+          setStats(data);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setStatsError((err as Error).message || "Unable to load stats");
+        }
+      }
+    };
+
+    fetchStats();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat("en-GH", {
+      style: "currency",
+      currency: "GHS",
+      maximumFractionDigits: 0,
+    }).format(value || 0);
+
+  const snapshotLabel = useMemo(
+    () => stats.snapshotDayLabel || defaultStats.snapshotDayLabel,
+    [stats.snapshotDayLabel]
+  );
+
   return (
     <div className="page-content">
       <section className="hero">
@@ -47,27 +111,31 @@ export default function Home() {
           <div className="hero-card">
             <div className="card-header">
               <h4>Today's Snapshot</h4>
-              <span>Sun</span>
+              <span>{snapshotLabel}</span>
             </div>
             <div className="card-grid">
               <div>
                 <p className="card-label">Sales</p>
-                <h3>₵ 1,240</h3>
-                <span className="card-tag">+12%</span>
+                <h3>{formatCurrency(stats.todayRevenue)}</h3>
+                <span className="card-tag">live</span>
               </div>
               <div>
-                <p className="card-label">Orders</p>
-                <h3>36</h3>
-                <span className="card-tag">steady</span>
+                <p className="card-label">Transactions</p>
+                <h3>{stats.totalTransactions}</h3>
+                <span className="card-tag">platform</span>
               </div>
             </div>
             <div className="card-footer">
               <div>
-                <p className="card-label">Top seller</p>
-                <h4>Fresh tomatoes</h4>
+                <p className="card-label">Top vendor sales today</p>
+                <h4>{formatCurrency(stats.topVendorRevenueToday)}</h4>
+                <p className="card-meta">{stats.totalVendors} vendors onboarded</p>
               </div>
-              <button className="button small">View report</button>
+              <Link className="button small" to="/report">
+                View report
+              </Link>
             </div>
+            {statsError && <p className="form-alert error">{statsError}</p>}
           </div>
         </div>
       </section>

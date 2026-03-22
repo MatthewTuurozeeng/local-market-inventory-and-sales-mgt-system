@@ -34,7 +34,7 @@ export default function Layout({ children }: LayoutProps) {
         <nav className="navbar">
           <Link to="/" className="brand">
             <span className="brand-mark"></span>
-            <span>Local Market</span>
+            <span>Daakye Vendor Space</span>
           </Link>
           <div className="nav-links">
             <NavLink

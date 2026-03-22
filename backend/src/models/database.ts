@@ -85,6 +85,15 @@ export interface SalesReportRow {
   productCategory: string;
 }
 
+export interface PublicStatsSummary {
+  totalVendors: number;
+  totalSales: number;
+  totalUnits: number;
+  totalTransactions: number;
+  todayRevenue: number;
+  topVendorRevenueToday: number;
+}
+
 interface VendorDocument extends VendorInput, Document {
   _id: mongoose.Types.ObjectId;
 }
@@ -297,6 +306,59 @@ const getSalesSummary = async (vendorId: string): Promise<SalesSummary> => {
   return summary[0] || { revenue: 0, units: 0, salesCount: 0 };
 };
 
+const getPublicStatsSummary = async (): Promise<PublicStatsSummary> => {
+  const [totalVendors, totals] = await Promise.all([
+    Vendor.countDocuments(),
+    Sale.aggregate<SalesSummary>([
+      {
+        $group: {
+          _id: null,
+          revenue: { $sum: "$total" },
+          units: { $sum: "$quantity" },
+          salesCount: { $sum: 1 },
+        },
+      },
+    ]),
+  ]);
+
+  const summary = totals[0] || { revenue: 0, units: 0, salesCount: 0 };
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const todayIso = todayStart.toISOString();
+
+  const [todaySummary, topVendor] = await Promise.all([
+    Sale.aggregate([
+      { $match: { soldAt: { $gte: todayIso } } },
+      {
+        $group: {
+          _id: null,
+          revenue: { $sum: "$total" },
+        },
+      },
+    ]),
+    Sale.aggregate([
+      { $match: { soldAt: { $gte: todayIso } } },
+      {
+        $group: {
+          _id: "$vendorId",
+          revenue: { $sum: "$total" },
+        },
+      },
+      { $sort: { revenue: -1 } },
+      { $limit: 1 },
+    ]),
+  ]);
+
+  return {
+    totalVendors,
+    totalSales: summary.revenue ?? 0,
+    totalUnits: summary.units ?? 0,
+    totalTransactions: summary.salesCount ?? 0,
+    todayRevenue: todaySummary[0]?.revenue ?? 0,
+    topVendorRevenueToday: topVendor[0]?.revenue ?? 0,
+  };
+};
+
 const listSalesByDateRange = async (
   vendorId: string,
   startDate: string | null,
@@ -364,4 +426,5 @@ export {
   listSales,
   listSalesByDateRange,
   getSalesSummary,
+  getPublicStatsSummary,
 };
