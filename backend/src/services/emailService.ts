@@ -35,15 +35,21 @@ const sendEmail = async (options: {
   const fromName = process.env.EMAIL_FROM_NAME || "Local Market";
   const fromAddress = process.env.EMAIL_FROM_ADDRESS || "no-reply@local-market";
 
-  await transporter.sendMail({
-    from: `${fromName} <${fromAddress}>`,
-    to: options.to,
-    subject: options.subject,
-    text: options.text,
-    html: options.html,
-  });
+  try {
+    await transporter.sendMail({
+      from: `${fromName} <${fromAddress}>`,
+      to: options.to,
+      subject: options.subject,
+      text: options.text,
+      html: options.html,
+    });
 
-  return true;
+    return true;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.warn("Email send failed.", error);
+    return false;
+  }
 };
 
 export { sendEmail };

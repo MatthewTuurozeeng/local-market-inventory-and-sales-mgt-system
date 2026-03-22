@@ -15,7 +15,13 @@ const sendPasswordResetEmail = async (vendor: VendorRecord, token: string) => {
     <p>This link expires in 30 minutes.</p>
   `;
 
-  return sendEmail({ to: vendor.email, subject, text, html });
+  try {
+    return await sendEmail({ to: vendor.email, subject, text, html });
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.warn("Password reset email failed.", error);
+    return false;
+  }
 };
 
 const notifyLowStock = async (vendor: VendorRecord, product: ProductRecord) => {
