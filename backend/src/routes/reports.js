@@ -31,7 +31,7 @@ router.post(
       ? new Date(req.body.startDate).toISOString()
       : null;
     const endDate = req.body.endDate
-      ? new Date(`${req.body.endDate}T23:59:59.999Z`).toISOString()
+      ? new Date(`${req.body.endDate}`).toISOString()
       : null;
     const fields = req.body.fields;
     const sales = await listSalesByDateRange(req.user.id, startDate, endDate);
@@ -70,14 +70,22 @@ router.post(
       doc.fillColor("black");
 
       doc.font("Helvetica-Bold").fontSize(20).text("Sales Report", {
-        align: "left",
+        align: "center",
       });
-      doc.moveDown(0.2);
-      doc.font("Helvetica").fontSize(11).fillColor("#6b6b6b").text(heading);
+      doc.moveDown(0.1);
+      doc
+        .font("Helvetica")
+        .fontSize(11)
+        .fillColor("#6b6b6b")
+        .text(heading, { align: "center" });
       doc.fillColor("black");
+      doc.moveDown(0.2);
+      doc
+        .fontSize(10)
+        .text(`Period: ${startDate || "Any"} → ${endDate || "Any"}`, {
+          align: "center",
+        });
       doc.moveDown(0.4);
-      doc.fontSize(10).text(`Period: ${startDate || "Any"} → ${endDate || "Any"}`);
-      doc.moveDown(0.8);
 
       const summaryTop = doc.y;
       doc.roundedRect(leftMargin, summaryTop, contentWidth, 70, 8).stroke("#d7d7d7");
@@ -90,31 +98,50 @@ router.post(
 
       const tableHeaders = fields.map((field) => field.toUpperCase());
       const tableTop = doc.y + 10;
-      const columnWidths = tableHeaders.map((header) =>
-        header === "PRODUCT" ? 140 : header === "CATEGORY" ? 110 : 90
-      );
+      const columnWidths = tableHeaders.map((header) => {
+        switch (header) {
+          case "Product":
+            return 160;
+          case "Category":
+            return 110;
+          case "SoldAt":
+            return 110;
+          default:
+            return 70;
+        }
+      });
+      const totalWidth = columnWidths.reduce((sum, value) => sum + value, 0);
+      const scale = totalWidth > contentWidth ? contentWidth / totalWidth : 1;
+      const scaledWidths = columnWidths.map((value) => value * scale);
 
-      doc.font("Helvetica-Bold").fontSize(10);
+      doc.rect(leftMargin, tableTop - 4, contentWidth, 22).fill("#f4f2ef");
+      doc.fillColor("#333").font("Helvetica-Bold").fontSize(10);
       let xPosition = leftMargin;
       tableHeaders.forEach((header, index) => {
-        doc.text(header, xPosition, tableTop, {
-          width: columnWidths[index],
+        doc.text(header, xPosition + 4, tableTop, {
+          width: scaledWidths[index] - 8,
           align: "left",
         });
-        xPosition += columnWidths[index];
+        xPosition += scaledWidths[index];
       });
+      doc.fillColor("#333");
 
-      doc.moveTo(leftMargin, tableTop + 16)
-        .lineTo(leftMargin + contentWidth, tableTop + 16)
+      doc.moveTo(leftMargin, tableTop + 18)
+        .lineTo(leftMargin + contentWidth, tableTop + 18)
         .strokeColor("#d0d0d0")
         .stroke();
 
       doc.font("Helvetica").fontSize(9).fillColor("#333");
       let rowY = tableTop + 24;
-      sales.forEach((sale) => {
+      sales.forEach((sale, rowIndex) => {
         if (rowY > doc.page.height - doc.page.margins.bottom - 40) {
           doc.addPage();
           rowY = doc.page.margins.top;
+        }
+
+        if (rowIndex % 2 === 0) {
+          doc.rect(leftMargin, rowY - 4, contentWidth, 20).fill("#faf9f7");
+          doc.fillColor("#333");
         }
 
         const rowValues = fields.map((field) => {
@@ -138,41 +165,107 @@ router.post(
 
         let rowX = leftMargin;
         rowValues.forEach((value, index) => {
-          doc.text(value, rowX, rowY, {
-            width: columnWidths[index],
-            align: "left",
+          const header = tableHeaders[index];
+          const align = ["Quantity", "Unit Price", "Total"].includes(header)
+            ? "right"
+            : "left";
+          doc.text(value, rowX + 4, rowY, {
+            width: scaledWidths[index] - 8,
+            align,
           });
-          rowX += columnWidths[index];
+          rowX += scaledWidths[index];
         });
         rowY += 18;
       });
 
+      let gridX = leftMargin;
+      scaledWidths.forEach((width) => {
+        gridX += width;
+        doc.moveTo(gridX, tableTop - 4)
+          .lineTo(gridX, rowY - 2)
+          .strokeColor("#e0e0e0")
+          .stroke();
+      });
+
       doc.addPage();
-      doc.font("Helvetica-Bold").fontSize(18).text("Sales Performance", {
+      doc.font("Helvetica-Bold").fontSize(18).text("Summary", {
         align: "left",
       });
-      doc.moveDown(0.5);
+      doc.moveDown(0.4);
       doc.font("Helvetica").fontSize(11).text(heading);
-      doc.moveDown();
+      doc.moveDown(0.6);
+      doc.fontSize(11).text(`Total sales: ${totals.count}`);
+      doc.text(`Units sold: ${totals.units}`);
+      doc.text(`Total revenue: ${totals.revenue}`);
 
-      const chartTop = doc.y + 10;
-      const chartHeight = 180;
-      const chartWidth = 360;
-      const barGap = 12;
-      const chartMax = Math.max(1, ...sales.map((sale) => Number(sale.total)));
+      doc.moveDown(1.2);
+      doc.font("Helvetica-Bold").fontSize(14).text("Sales Visuals", {
+        align: "left",
+      });
+      doc.moveDown(0.6);
+
       const topSales = sales.slice(0, 5);
+      const chartMax = Math.max(1, ...topSales.map((sale) => Number(sale.total)));
+      const barWidth = 260;
+      const barHeight = 14;
+      const barGap = 12;
+      const barStartX = leftMargin;
+      let barStartY = doc.y + 10;
 
-      doc.fontSize(10).text("Top sales totals", leftMargin, chartTop - 18);
-      topSales.forEach((sale, index) => {
-        const barWidth = ((Number(sale.total) / chartMax) * chartWidth) || 0;
-        const barY = chartTop + index * (barGap + 18);
-        doc.fillColor("#734A3B").rect(leftMargin, barY, barWidth, 14).fill();
+      doc.font("Helvetica").fontSize(10).text("Top 5 Sales Totals", barStartX, barStartY - 18);
+      topSales.forEach((sale) => {
+        const width = (Number(sale.total) / chartMax) * barWidth;
+        doc.fillColor("#734A3B").rect(barStartX, barStartY, width, barHeight).fill();
         doc.fillColor("#333").text(
           `${sale.productName} (${sale.total})`,
-          leftMargin + chartWidth + 10,
-          barY - 2
+          barStartX + barWidth + 12,
+          barStartY - 2
         );
+        barStartY += barHeight + barGap;
       });
+
+      const pieCenterX = leftMargin + barWidth + 140;
+      const pieCenterY = doc.y + 40;
+      const pieRadius = 55;
+      const pieColors = ["#734A3B", "#593F24", "#D6A77A", "#88A289", "#B9C6B1"];
+      const totalRevenue = topSales.reduce(
+        (acc, sale) => acc + Number(sale.total),
+        0
+      );
+      const legendStartX = pieCenterX - 60;
+      let legendStartY = pieCenterY + pieRadius + 18;
+
+      if (totalRevenue > 0) {
+        let startAngle = -Math.PI / 2;
+        topSales.forEach((sale, index) => {
+          const sliceAngle = (Number(sale.total) / totalRevenue) * Math.PI * 2;
+          doc.save();
+          doc
+            .moveTo(pieCenterX, pieCenterY)
+            .fillColor(pieColors[index % pieColors.length])
+            .arc(pieCenterX, pieCenterY, pieRadius, startAngle, startAngle + sliceAngle)
+            .lineTo(pieCenterX, pieCenterY)
+            .fill();
+          doc.restore();
+          startAngle += sliceAngle;
+
+          doc.fillColor(pieColors[index % pieColors.length])
+            .rect(legendStartX, legendStartY, 10, 10)
+            .fill();
+          doc.fillColor("#333").fontSize(9).text(
+            `${sale.productName} (${sale.total})`,
+            legendStartX + 14,
+            legendStartY - 2,
+            { width: 140 }
+          );
+          legendStartY += 14;
+        });
+
+        doc.fillColor("#333").fontSize(9).text("Revenue Share", pieCenterX - 50, pieCenterY + pieRadius + 6, {
+          width: 120,
+          align: "center",
+        });
+      }
 
       doc.end();
       return;
