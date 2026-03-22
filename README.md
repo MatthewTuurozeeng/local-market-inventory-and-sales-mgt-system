@@ -39,6 +39,19 @@ cp .env.example .env
 npm run dev
 ```
 
+## Backend Architecture
+The backend uses a TypeScript + Express structure with clear separation of responsibilities:
+
+- `backend/src/index.ts` — Express app bootstrap, middleware registration, and route wiring.
+- `backend/src/routes/` — HTTP route handlers (auth, vendors, products, sales, reports, summary).
+- `backend/src/middleware/`
+	- `auth/` — JWT auth middleware and token helpers.
+	- `validators/` — request validation chains for routes.
+- `backend/src/models/` — Mongoose schemas + database helpers.
+- `backend/src/services/` — reusable business logic (e.g., report generation).
+- `backend/src/types/` — shared TypeScript types + Express request augmentation.
+- `backend/src/utils/` — scripts and utilities (e.g., seed data).
+
 ### Seed sample data (fixed login)
 ```zsh
 cd backend

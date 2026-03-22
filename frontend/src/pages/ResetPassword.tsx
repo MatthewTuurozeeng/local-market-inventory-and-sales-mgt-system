@@ -51,9 +51,12 @@ export default function ResetPassword() {
               {loading ? "Sending..." : "Send reset link"}
             </button>
           </form>
-          <p className="form-helper">
-            If you remember your password, go back to <Link to="/login">Login</Link>.
-          </p>
+            <p className="auth-link">
+              Already have a reset token? <Link to="/reset-password/confirm">Set a new password</Link>
+            </p>
+            <p className="form-helper">
+              If you remember your password, go back to <Link to="/login">Login</Link>.
+            </p>
         </div>
       </section>
     </div>

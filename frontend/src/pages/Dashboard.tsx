@@ -10,7 +10,6 @@ import {
   getSales,
   getSummary,
   hasToken,
-  logout,
   downloadSalesReport,
   type Product,
   type SalesSummary,
@@ -238,11 +237,6 @@ export default function Dashboard() {
   useEffect(() => {
     loadData();
   }, []);
-
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
 
   const handleProductSubmit = async (event: React.FormEvent) => {
     event.preventDefault();

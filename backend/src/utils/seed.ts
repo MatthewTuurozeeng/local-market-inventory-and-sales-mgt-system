@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import mongoose from "mongoose";
+import mongoose, { type Document } from "mongoose";
 import bcrypt from "bcryptjs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
@@ -16,9 +16,47 @@ if (fs.existsSync(envPath)) {
 const MONGODB_URI =
   process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/local-market";
 
+interface VendorDocument extends Document {
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  passwordHash: string;
+  idType: string;
+  idNumber: string;
+  businessName: string;
+  location: string;
+  primaryProducts: string;
+  staffCount: number;
+  productTypes: string[];
+  otherProductTypes?: string;
+  createdAt: string;
+}
+
+interface ProductDocument extends Document {
+  vendorId: mongoose.Types.ObjectId;
+  name: string;
+  category: string;
+  unit: string;
+  price: number;
+  stock: number;
+  lowStockThreshold: number;
+  createdAt: string;
+}
+
+interface SaleDocument extends Document {
+  vendorId: mongoose.Types.ObjectId;
+  productId: mongoose.Types.ObjectId;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+  soldAt: string;
+}
+
 const { Schema } = mongoose;
 
-const VendorSchema = new Schema({
+const VendorSchema = new Schema<VendorDocument>({
   firstName: { type: String, required: true },
   middleName: { type: String },
   lastName: { type: String, required: true },
@@ -36,7 +74,7 @@ const VendorSchema = new Schema({
   createdAt: { type: String, required: true },
 });
 
-const ProductSchema = new Schema({
+const ProductSchema = new Schema<ProductDocument>({
   vendorId: { type: Schema.Types.ObjectId, ref: "Vendor", required: true },
   name: { type: String, required: true },
   category: { type: String, required: true },
@@ -47,7 +85,7 @@ const ProductSchema = new Schema({
   createdAt: { type: String, required: true },
 });
 
-const SaleSchema = new Schema({
+const SaleSchema = new Schema<SaleDocument>({
   vendorId: { type: Schema.Types.ObjectId, ref: "Vendor", required: true },
   productId: { type: Schema.Types.ObjectId, ref: "Product", required: true },
   quantity: { type: Number, required: true },
@@ -56,9 +94,9 @@ const SaleSchema = new Schema({
   soldAt: { type: String, required: true },
 });
 
-const Vendor = mongoose.model("Vendor", VendorSchema);
-const Product = mongoose.model("Product", ProductSchema);
-const Sale = mongoose.model("Sale", SaleSchema);
+const Vendor = mongoose.model<VendorDocument>("Vendor", VendorSchema);
+const Product = mongoose.model<ProductDocument>("Product", ProductSchema);
+const Sale = mongoose.model<SaleDocument>("Sale", SaleSchema);
 
 const seed = async () => {
   await mongoose.connect(MONGODB_URI);

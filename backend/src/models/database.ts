@@ -1,0 +1,326 @@
+import mongoose, { type Document, Schema } from "mongoose";
+
+export interface VendorInput {
+  firstName: string;
+  middleName?: string | null;
+  lastName: string;
+  email: string;
+  phone: string;
+  passwordHash: string;
+  resetToken?: string | null;
+  resetTokenExpires?: string | null;
+  idType: string;
+  idNumber: string;
+  businessName: string;
+  location: string;
+  primaryProducts: string;
+  staffCount: number;
+  productTypes: string[] | string;
+  otherProductTypes?: string | null;
+  createdAt: string;
+}
+
+export interface VendorRecord extends VendorInput {
+  id: string;
+}
+
+export interface ProductInput {
+  name: string;
+  category: string;
+  unit: string;
+  price: number;
+  stock: number;
+  lowStockThreshold: number;
+  createdAt?: string;
+}
+
+export interface ProductRecord extends ProductInput {
+  id: string;
+  vendorId: string;
+}
+
+export interface SaleInput {
+  productId: string;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+  soldAt: string;
+}
+
+export interface SaleRecord extends SaleInput {
+  id: string;
+  vendorId: string;
+}
+
+export interface SalesSummary {
+  revenue: number;
+  units: number;
+  salesCount: number;
+}
+
+export interface SalesReportRow {
+  quantity: number;
+  unitPrice: number;
+  total: number;
+  soldAt: string;
+  productName: string;
+  productCategory: string;
+}
+
+interface VendorDocument extends VendorInput, Document {
+  _id: mongoose.Types.ObjectId;
+}
+
+interface ProductDocument extends Omit<ProductInput, "createdAt">, Document {
+  _id: mongoose.Types.ObjectId;
+  vendorId: mongoose.Types.ObjectId;
+  createdAt: string;
+}
+
+interface SaleDocument extends Omit<SaleInput, "productId">, Document {
+  _id: mongoose.Types.ObjectId;
+  vendorId: mongoose.Types.ObjectId;
+  productId: mongoose.Types.ObjectId;
+}
+
+const VendorSchema = new Schema<VendorDocument>({
+  firstName: { type: String, required: true },
+  middleName: { type: String },
+  lastName: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  phone: { type: String, required: true },
+  passwordHash: { type: String, required: true },
+  resetToken: { type: String },
+  resetTokenExpires: { type: String },
+  idType: { type: String, required: true },
+  idNumber: { type: String, required: true },
+  businessName: { type: String, required: true },
+  location: { type: String, required: true },
+  primaryProducts: { type: String, required: true },
+  staffCount: { type: Number, required: true },
+  productTypes: { type: [String], required: true },
+  otherProductTypes: { type: String },
+  createdAt: { type: String, required: true },
+});
+
+const ProductSchema = new Schema<ProductDocument>({
+  vendorId: { type: Schema.Types.ObjectId, ref: "Vendor", required: true },
+  name: { type: String, required: true },
+  category: { type: String, required: true },
+  unit: { type: String, required: true },
+  price: { type: Number, required: true },
+  stock: { type: Number, required: true },
+  lowStockThreshold: { type: Number, required: true },
+  createdAt: { type: String, required: true },
+});
+
+const SaleSchema = new Schema<SaleDocument>({
+  vendorId: { type: Schema.Types.ObjectId, ref: "Vendor", required: true },
+  productId: { type: Schema.Types.ObjectId, ref: "Product", required: true },
+  quantity: { type: Number, required: true },
+  unitPrice: { type: Number, required: true },
+  total: { type: Number, required: true },
+  soldAt: { type: String, required: true },
+});
+
+const Vendor = mongoose.model<VendorDocument>("Vendor", VendorSchema);
+const Product = mongoose.model<ProductDocument>("Product", ProductSchema);
+const Sale = mongoose.model<SaleDocument>("Sale", SaleSchema);
+
+const normalizeVendor = (vendor: VendorDocument | null): VendorRecord | null =>
+  vendor ? { ...(vendor.toObject() as VendorInput), id: vendor._id.toString() } : null;
+
+const normalizeProduct = (product: ProductDocument | null): ProductRecord | null =>
+  product
+    ? {
+        ...(product.toObject() as ProductInput),
+        id: product._id.toString(),
+        vendorId: product.vendorId.toString(),
+      }
+    : null;
+
+const normalizeSale = (sale: SaleDocument | null): SaleRecord | null =>
+  sale
+    ? {
+        ...(sale.toObject() as SaleInput),
+        id: sale._id.toString(),
+        vendorId: sale.vendorId.toString(),
+      }
+    : null;
+
+const createVendor = async (payload: VendorInput): Promise<string> => {
+  const vendor = await Vendor.create(payload);
+  return vendor._id.toString();
+};
+
+const findVendorByEmail = async (email: string): Promise<VendorRecord | null> => {
+  const vendor = await Vendor.findOne({ email });
+  return normalizeVendor(vendor);
+};
+
+const setVendorResetToken = async (
+  email: string,
+  token: string,
+  expiresAt: string
+): Promise<void> => {
+  await Vendor.updateOne(
+    { email },
+    { resetToken: token, resetTokenExpires: expiresAt }
+  );
+};
+
+const findVendorByResetToken = async (
+  token: string
+): Promise<VendorRecord | null> => {
+  const vendor = await Vendor.findOne({ resetToken: token });
+  return normalizeVendor(vendor);
+};
+
+const updateVendorPassword = async (
+  vendorId: string,
+  passwordHash: string
+): Promise<void> => {
+  await Vendor.updateOne(
+    { _id: vendorId },
+    { passwordHash, resetToken: null, resetTokenExpires: null }
+  );
+};
+
+const getVendorById = async (id: string): Promise<VendorRecord | null> => {
+  const vendor = await Vendor.findById(id);
+  return normalizeVendor(vendor);
+};
+
+const listProducts = async (vendorId: string): Promise<ProductRecord[]> => {
+  const products = await Product.find({ vendorId }).sort({ createdAt: -1 });
+  return products
+    .map((product) => normalizeProduct(product))
+    .filter((product): product is ProductRecord => Boolean(product));
+};
+
+const createProduct = async (
+  vendorId: string,
+  data: ProductInput
+): Promise<ProductRecord> => {
+  const product = await Product.create({
+    vendorId,
+    createdAt: new Date().toISOString(),
+    ...data,
+  });
+  return normalizeProduct(product) as ProductRecord;
+};
+
+const updateProductStock = async (
+  vendorId: string,
+  productId: string,
+  delta: number
+): Promise<void> => {
+  const product = await Product.findOne({ _id: productId, vendorId });
+  if (!product) {
+    return;
+  }
+  const nextStock = Math.max(0, Number(product.stock) + Number(delta));
+  product.stock = Number(nextStock.toFixed(2));
+  await product.save();
+};
+
+const createSale = async (
+  vendorId: string,
+  data: SaleInput
+): Promise<SaleRecord> => {
+  const sale = await Sale.create({
+    vendorId,
+    ...data,
+  });
+  return normalizeSale(sale) as SaleRecord;
+};
+
+const listSales = async (vendorId: string): Promise<SaleRecord[]> => {
+  const sales = await Sale.find({ vendorId }).sort({ soldAt: -1 });
+  return sales
+    .map((sale) => normalizeSale(sale))
+    .filter((sale): sale is SaleRecord => Boolean(sale));
+};
+
+const getSalesSummary = async (vendorId: string): Promise<SalesSummary> => {
+  const summary = await Sale.aggregate([
+    { $match: { vendorId: new mongoose.Types.ObjectId(vendorId) } },
+    {
+      $group: {
+        _id: null,
+        revenue: { $sum: "$total" },
+        units: { $sum: "$quantity" },
+        salesCount: { $sum: 1 },
+      },
+    },
+  ]);
+  return summary[0] || { revenue: 0, units: 0, salesCount: 0 };
+};
+
+const listSalesByDateRange = async (
+  vendorId: string,
+  startDate: string | null,
+  endDate: string | null
+): Promise<SalesReportRow[]> => {
+  const match: Record<string, unknown> = {
+    vendorId: new mongoose.Types.ObjectId(vendorId),
+  };
+  if (startDate || endDate) {
+    match.soldAt = {};
+    if (startDate) {
+      (match.soldAt as Record<string, string>).$gte = startDate;
+    }
+    if (endDate) {
+      (match.soldAt as Record<string, string>).$lte = endDate;
+    }
+  }
+
+  const rows = await Sale.aggregate([
+    { $match: match },
+    {
+      $lookup: {
+        from: "products",
+        localField: "productId",
+        foreignField: "_id",
+        as: "product",
+      },
+    },
+    { $unwind: { path: "$product", preserveNullAndEmptyArrays: true } },
+    {
+      $project: {
+        quantity: 1,
+        unitPrice: 1,
+        total: 1,
+        soldAt: 1,
+        productName: "$product.name",
+        productCategory: "$product.category",
+      },
+    },
+    { $sort: { soldAt: -1 } },
+  ]);
+
+  return rows.map((row: SalesReportRow) => ({
+    quantity: row.quantity,
+    unitPrice: row.unitPrice,
+    total: row.total,
+    soldAt: row.soldAt,
+    productName: row.productName || "Unknown",
+    productCategory: row.productCategory || "",
+  }));
+};
+
+export {
+  createVendor,
+  findVendorByEmail,
+  setVendorResetToken,
+  findVendorByResetToken,
+  updateVendorPassword,
+  getVendorById,
+  listProducts,
+  createProduct,
+  updateProductStock,
+  createSale,
+  listSales,
+  listSalesByDateRange,
+  getSalesSummary,
+};

@@ -8,6 +8,7 @@ import Login from "./Login.tsx";
 import Dashboard from "./Dashboard.tsx";
 import NotFound from "./NotFound.tsx";
 import ResetPassword from "./ResetPassword.tsx";
+import ResetConfirm from "./ResetConfirm.tsx";
 import Signup from "./Signup.tsx";
 import ProtectedRoute from "../components/ProtectedRoute.tsx";
 
@@ -21,6 +22,7 @@ export default function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+  <Route path="/reset-password/confirm" element={<ResetConfirm />} />
       <Route
         path="/dashboard"
         element={

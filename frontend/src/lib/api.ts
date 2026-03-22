@@ -114,6 +114,15 @@ export const requestPasswordReset = async (email: string) =>
     body: JSON.stringify({ email }),
   });
 
+export const confirmPasswordReset = async (payload: {
+  token: string;
+  password: string;
+}) =>
+  request<{ message: string }>("/auth/reset/confirm", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
 export const getProfile = async () =>
   request<VendorProfile>("/vendors/me", { method: "GET" });
 
