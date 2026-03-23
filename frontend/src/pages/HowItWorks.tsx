@@ -18,7 +18,6 @@ export default function HowItWorks() {
     <div className="page-content">
       <section className="section highlight">
         <div className="section-title">
-          <p className="eyebrow">How it works</p>
           <h2>Get started in three simple steps.</h2>
         </div>
         <div className="grid three">

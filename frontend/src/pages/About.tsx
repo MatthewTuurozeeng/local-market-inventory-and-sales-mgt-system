@@ -3,7 +3,6 @@ export default function About() {
     <div className="page-content">
       <section className="section about">
         <div className="about-text">
-          <p className="eyebrow">About</p>
           <h2>Built for local market vendors in Ghana.</h2>
           <p>
             Our platform is a simple and powerful sales and inventory management system

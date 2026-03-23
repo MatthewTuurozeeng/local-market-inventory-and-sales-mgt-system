@@ -83,7 +83,7 @@ export default function Home() {
       <section className="hero">
         <div className="hero-content">
           <div className="hero-text">
-            <p className="eyebrow">Built for Ghanaian market vendors</p>
+            <p className="eyebrow">Built for market vendors</p>
             <h1>Run your stall with clarity, speed, and confidence.</h1>
             <p className="subtext">
               Local Market Inventory & Sales helps you track stock, record sales, and

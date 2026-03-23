@@ -18,7 +18,6 @@ import ProfileSettings from "./ProfileSettings.tsx";
 import ThemeSettings from "./ThemeSettings.tsx";
 import NotificationSettingsPanel from "./NotificationSettings.tsx";
 import InventorySettingsPanel from "./InventorySettings.tsx";
-import SecuritySettings from "./SecuritySettings.tsx";
 
 type StatusTone = "success" | "error" | "";
 
@@ -33,6 +32,9 @@ const defaultProfile: VendorSettingsProfile = {
   phone: "",
   email: "",
   location: "",
+  businessCategory: "",
+  productFocus: "",
+  shopDescription: "",
   avatarUrl: null,
   storeLogoUrl: null,
 };
@@ -130,6 +132,9 @@ export default function SettingsPage() {
         phone: "+233 24 000 0000",
         email: "ama@market.com",
         location: "Makola Market, Accra",
+        businessCategory: "Fresh produce",
+        productFocus: "Tomatoes, onions, peppers",
+        shopDescription: "A family-run stall serving fresh market produce.",
         avatarUrl: null,
         storeLogoUrl: null,
       });
@@ -419,6 +424,12 @@ export default function SettingsPage() {
         logoStatus={logoStatus}
         isAvatarUploading={avatarUploading}
         isLogoUploading={logoUploading}
+        passwordValues={passwordForm}
+        onPasswordChange={setPasswordForm}
+        onPasswordSubmit={handlePasswordSubmit}
+        passwordStatus={passwordStatus.message}
+        passwordTone={passwordStatus.tone}
+        isPasswordSaving={passwordSaving}
       />
       <ThemeSettings />
       <NotificationSettingsPanel
@@ -436,14 +447,6 @@ export default function SettingsPage() {
         statusMessage={inventoryStatus.message}
         statusTone={inventoryStatus.tone}
         isSaving={inventorySaving}
-      />
-      <SecuritySettings
-        values={passwordForm}
-        onChange={setPasswordForm}
-        onSubmit={handlePasswordSubmit}
-        statusMessage={passwordStatus.message}
-        statusTone={passwordStatus.tone}
-        isSaving={passwordSaving}
       />
       <div className="panel">
         <h3>Data & exports</h3>

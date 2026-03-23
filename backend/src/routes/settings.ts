@@ -45,6 +45,9 @@ router.get("/", authenticate, async (req: Request, res: Response) => {
       phone: vendor.phone,
       email: vendor.email,
       location: vendor.location,
+  businessCategory: vendor.businessCategory ?? "",
+  productFocus: vendor.productFocus ?? "",
+  shopDescription: vendor.shopDescription ?? "",
       avatarUrl: vendor.avatarUrl ?? null,
       storeLogoUrl: vendor.storeLogoUrl ?? null,
     },
@@ -101,6 +104,9 @@ router.put(
       phone: req.body.phone as string | undefined,
       email: nextEmail,
       location: req.body.location as string | undefined,
+      businessCategory: req.body.businessCategory as string | undefined,
+      productFocus: req.body.productFocus as string | undefined,
+      shopDescription: req.body.shopDescription as string | undefined,
     });
 
     if (!updated) {
@@ -113,6 +119,9 @@ router.put(
       phone: updated.phone,
       email: updated.email,
       location: updated.location,
+  businessCategory: updated.businessCategory ?? "",
+  productFocus: updated.productFocus ?? "",
+  shopDescription: updated.shopDescription ?? "",
       avatarUrl: updated.avatarUrl ?? null,
       storeLogoUrl: updated.storeLogoUrl ?? null,
     });

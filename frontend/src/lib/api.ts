@@ -97,6 +97,9 @@ export type VendorProfile = {
   storeLogoUrl?: string | null;
   businessName: string;
   location: string;
+  businessCategory?: string | null;
+  productFocus?: string | null;
+  shopDescription?: string | null;
   primaryProducts: string;
   staffCount: number;
   productTypes: string[];
@@ -134,6 +137,9 @@ export type VendorSettingsProfile = {
   phone: string;
   email: string;
   location: string;
+  businessCategory: string;
+  productFocus: string;
+  shopDescription: string;
   avatarUrl?: string | null;
   storeLogoUrl?: string | null;
 };

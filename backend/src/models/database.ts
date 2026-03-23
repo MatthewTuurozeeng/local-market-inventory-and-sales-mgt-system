@@ -19,6 +19,9 @@ export interface VendorInput {
   idNumber: string;
   businessName: string;
   location: string;
+  businessCategory?: string | null;
+  productFocus?: string | null;
+  shopDescription?: string | null;
   primaryProducts: string;
   staffCount: number;
   productTypes: string[] | string;
@@ -42,6 +45,9 @@ export interface VendorUpdateInput {
   idNumber?: string;
   businessName?: string;
   location?: string;
+  businessCategory?: string | null;
+  productFocus?: string | null;
+  shopDescription?: string | null;
   primaryProducts?: string;
   staffCount?: number;
   productTypes?: string[];
@@ -148,6 +154,9 @@ const VendorSchema = new Schema<VendorDocument>({
   idNumber: { type: String, required: true },
   businessName: { type: String, required: true },
   location: { type: String, required: true },
+  businessCategory: { type: String },
+  productFocus: { type: String },
+  shopDescription: { type: String },
   primaryProducts: { type: String, required: true },
   staffCount: { type: Number, required: true },
   productTypes: { type: [String], required: true },

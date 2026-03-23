@@ -30,7 +30,6 @@ export default function Features() {
     <div className="page-content">
       <section className="section">
         <div className="section-title">
-          <p className="eyebrow">Features</p>
           <h2>Everything you need to manage a busy market day.</h2>
         </div>
         <div className="grid three">

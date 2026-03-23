@@ -3,7 +3,6 @@ export default function GetStarted() {
     <div className="page-content">
       <section className="section">
         <div className="section-title">
-          <p className="eyebrow">Get Started</p>
           <h2>Launch your digital stall in minutes.</h2>
         </div>
         <div className="grid two">

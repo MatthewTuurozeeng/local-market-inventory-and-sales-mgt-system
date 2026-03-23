@@ -30,7 +30,6 @@ export default function Login() {
     <div className="page-content">
       <section className="section">
         <div className="section-title">
-          <p className="eyebrow">Login</p>
           <h2>Welcome back Daakye Vendor Space.</h2>
         </div>
         <div className="panel form-panel">
