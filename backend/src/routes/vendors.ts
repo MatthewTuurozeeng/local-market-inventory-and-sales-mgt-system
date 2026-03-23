@@ -27,6 +27,7 @@ router.get("/me", authenticate, async (req: Request, res: Response) => {
     phone: vendor.phone,
   businessName: vendor.businessName,
   avatarUrl: vendor.avatarUrl,
+    storeLogoUrl: vendor.storeLogoUrl,
     location: vendor.location,
     primaryProducts: vendor.primaryProducts,
     staffCount: vendor.staffCount,
@@ -89,6 +90,7 @@ router.patch(
       phone: updated.phone,
     businessName: updated.businessName,
     avatarUrl: updated.avatarUrl,
+      storeLogoUrl: updated.storeLogoUrl,
       location: updated.location,
       primaryProducts: updated.primaryProducts,
       staffCount: updated.staffCount,
@@ -122,8 +124,44 @@ const storage = multer.diskStorage({
   },
 });
 
+const logoStorage = multer.diskStorage({
+  destination: async (
+    _req: Request,
+    _file: Express.Multer.File,
+    cb: (error: Error | null, destination: string) => void
+  ) => {
+    await fs.mkdir(uploadDir, { recursive: true });
+    cb(null, uploadDir);
+  },
+  filename: (
+    _req: Request,
+    file: Express.Multer.File,
+    cb: (error: Error | null, filename: string) => void
+  ) => {
+    const ext = path.extname(file.originalname).toLowerCase() || ".png";
+    const safeExt = [".jpg", ".jpeg", ".png", ".webp"].includes(ext) ? ext : ".png";
+    cb(null, `logo-${Date.now()}${safeExt}`);
+  },
+});
+
 const upload = multer({
   storage,
+  limits: { fileSize: 2 * 1024 * 1024 },
+  fileFilter: (
+    _req: Request,
+    file: Express.Multer.File,
+    cb: multer.FileFilterCallback
+  ) => {
+    if (!file.mimetype.startsWith("image/")) {
+      cb(new Error("Only image files are allowed."));
+      return;
+    }
+    cb(null, true);
+  },
+});
+
+const logoUpload = multer({
+  storage: logoStorage,
   limits: { fileSize: 2 * 1024 * 1024 },
   fileFilter: (
     _req: Request,
@@ -158,6 +196,29 @@ router.post(
     }
 
     return res.json({ avatarUrl });
+  }
+);
+
+router.post(
+  "/me/logo",
+  authenticate,
+  logoUpload.single("logo"),
+  async (req: Request, res: Response) => {
+    const vendorId = req.user?.id;
+    if (!vendorId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    if (!req.file) {
+      return res.status(400).json({ message: "Logo file is required." });
+    }
+
+    const storeLogoUrl = `/uploads/${req.file.filename}`;
+    const updated = await updateVendor(vendorId, { storeLogoUrl });
+    if (!updated) {
+      return res.status(404).json({ message: "Vendor not found" });
+    }
+
+    return res.json({ storeLogoUrl });
   }
 );
 

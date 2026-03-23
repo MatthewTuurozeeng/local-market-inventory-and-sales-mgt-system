@@ -11,6 +11,7 @@ import salesRoutes from "./routes/sales.ts";
 import summaryRoutes from "./routes/summary.ts";
 import reportRoutes from "./routes/reports.ts";
 import publicRoutes from "./routes/public.ts";
+import settingsRoutes from "./routes/settings.ts";
 
 dotenv.config();
 
@@ -36,6 +37,7 @@ app.use("/api/sales", salesRoutes);
 app.use("/api/summary", summaryRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/public", publicRoutes);
+app.use("/api/settings", settingsRoutes);
 
 app.use((req: Request, res: Response) => {
   res.status(404).json({ message: "Route not found" });

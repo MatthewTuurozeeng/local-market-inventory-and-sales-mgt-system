@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiBarChart2, FiBox, FiFileText, FiGrid, FiShoppingCart, FiUser } from "react-icons/fi";
 import {
   adjustStock,
   createProduct,
@@ -10,12 +9,14 @@ import {
   getSales,
   getSummary,
   hasToken,
-  updateProfile,
   downloadSalesReport,
+  resolveMediaUrl,
   type Product,
   type SalesSummary,
   type VendorProfile,
 } from "../lib/api.ts";
+import SettingsPage from "../components/settings/SettingsPage.tsx";
+import DashboardSidebar from "./DashboardSidebar.tsx";
 
 const emptySummary: SalesSummary = { revenue: 0, units: 0, salesCount: 0 };
 const useMocks = import.meta.env.VITE_USE_MOCKS === "true";
@@ -31,6 +32,8 @@ const mockProfile: VendorProfile = {
   staffCount: 3,
   productTypes: ["Fresh produce", "Spices & condiments"],
   otherProductTypes: "Citrus",
+  avatarUrl: null,
+  storeLogoUrl: null,
 };
 
 const mockProducts: Product[] = [
@@ -93,7 +96,13 @@ const mockSales = [
 export default function Dashboard() {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState(
-    "overview" as "overview" | "inventory" | "sales" | "analytics" | "reports"
+    "overview" as
+      | "overview"
+      | "inventory"
+      | "sales"
+      | "analytics"
+      | "reports"
+      | "settings"
   );
   const [profile, setProfile] = useState<VendorProfile | null>(null);
   const [summary, setSummary] = useState<SalesSummary>(emptySummary);
@@ -124,19 +133,6 @@ export default function Dashboard() {
     fields: ["product", "quantity", "unitPrice", "total", "soldAt"],
   });
   const [reportStatus, setReportStatus] = useState("");
-  const [profileForm, setProfileForm] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    businessName: "",
-    location: "",
-    primaryProducts: "",
-    staffCount: "",
-    productTypes: "",
-    otherProductTypes: "",
-  });
-  const [profileStatus, setProfileStatus] = useState("");
 
   const reportFields = [
     { key: "product", label: "Product" },
@@ -217,7 +213,11 @@ export default function Dashboard() {
         }),
         { revenue: 0, units: 0, salesCount: 0 }
       );
-      setProfile(mockProfile);
+      setProfile({
+        ...mockProfile,
+        avatarUrl: resolveMediaUrl(mockProfile.avatarUrl),
+        storeLogoUrl: resolveMediaUrl(mockProfile.storeLogoUrl),
+      });
       setSummary(mockSummary);
       setProducts(mockProducts);
       setSales(mockSales);
@@ -237,7 +237,11 @@ export default function Dashboard() {
         getProducts(),
         getSales(),
       ]);
-      setProfile(profileData);
+      setProfile({
+        ...profileData,
+        avatarUrl: resolveMediaUrl(profileData.avatarUrl),
+        storeLogoUrl: resolveMediaUrl(profileData.storeLogoUrl),
+      });
       setSummary(summaryData.summary ?? emptySummary);
       setProducts(productsData.products ?? []);
       setSales(salesData.sales ?? []);
@@ -245,55 +249,6 @@ export default function Dashboard() {
       setError((err as Error).message || "Unable to load dashboard data.");
     } finally {
       setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!profile) {
-      return;
-    }
-    setProfileForm({
-      firstName: profile.firstName ?? "",
-      lastName: profile.lastName ?? "",
-      email: profile.email ?? "",
-      phone: profile.phone ?? "",
-      businessName: profile.businessName ?? "",
-      location: profile.location ?? "",
-      primaryProducts: profile.primaryProducts ?? "",
-      staffCount: String(profile.staffCount ?? ""),
-      productTypes: (profile.productTypes || []).join(", "),
-      otherProductTypes: profile.otherProductTypes ?? "",
-    });
-  }, [profile]);
-
-  const handleProfileSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setProfileStatus("");
-    if (useMocks) {
-      setProfileStatus("Profile updates are available when using the live API.");
-      return;
-    }
-    const productTypes = profileForm.productTypes
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-    try {
-      const updated = await updateProfile({
-        firstName: profileForm.firstName,
-        lastName: profileForm.lastName,
-        email: profileForm.email,
-        phone: profileForm.phone,
-        businessName: profileForm.businessName,
-        location: profileForm.location,
-        primaryProducts: profileForm.primaryProducts,
-        staffCount: Number(profileForm.staffCount),
-        productTypes: productTypes.length > 0 ? productTypes : profile?.productTypes,
-        otherProductTypes: profileForm.otherProductTypes,
-      });
-      setProfile(updated);
-      setProfileStatus("Profile updated successfully.");
-    } catch (err) {
-      setProfileStatus((err as Error).message || "Unable to update profile.");
     }
   };
 
@@ -414,78 +369,13 @@ export default function Dashboard() {
   return (
     <div className="page-content">
       <div className="dashboard-layout">
-        <aside className="dashboard-sidebar">
-          <div className="sidebar-header">
-            <p className="eyebrow">Vendor space</p>
-            <h3>{profile?.businessName ?? "Vendor Dashboard"}</h3>
-            <p className="sidebar-subtext">Manage inventory, sales, and insights.</p>
-          </div>
-          <nav className="sidebar-nav">
-            <button
-              className={activeSection === "overview" ? "active" : ""}
-              onClick={() => setActiveSection("overview")}
-              type="button"
-            >
-              <FiGrid className="sidebar-icon" aria-hidden />
-              Overview
-            </button>
-            <button
-              className={activeSection === "inventory" ? "active" : ""}
-              onClick={() => setActiveSection("inventory")}
-              type="button"
-            >
-              <FiBox className="sidebar-icon" aria-hidden />
-              Inventory
-            </button>
-            <button
-              className={activeSection === "sales" ? "active" : ""}
-              onClick={() => setActiveSection("sales")}
-              type="button"
-            >
-              <FiShoppingCart className="sidebar-icon" aria-hidden />
-              Sales
-            </button>
-            <button
-              className={activeSection === "analytics" ? "active" : ""}
-              onClick={() => setActiveSection("analytics")}
-              type="button"
-            >
-              <FiBarChart2 className="sidebar-icon" aria-hidden />
-              Analytics
-            </button>
-            <button
-              className={activeSection === "reports" ? "active" : ""}
-              onClick={() => setActiveSection("reports")}
-              type="button"
-            >
-              <FiFileText className="sidebar-icon" aria-hidden />
-              Reports
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate("/profile")}
-            >
-              <FiUser className="sidebar-icon" aria-hidden />
-              Profile
-            </button>
-          </nav>
-          <div className="sidebar-quick">
-            <p className="sidebar-label">Quick analytics</p>
-            <div className="sidebar-metric">
-              <span>Total revenue</span>
-              <strong>{formatCurrency(summary.revenue)}</strong>
-            </div>
-            <div className="sidebar-metric">
-              <span>Units sold</span>
-              <strong>{summary.units}</strong>
-            </div>
-            <div className="sidebar-metric">
-              <span>Sales recorded</span>
-              <strong>{summary.salesCount}</strong>
-            </div>
-          </div>
-        </aside>
-
+        <DashboardSidebar
+          activeSection={activeSection}
+          onSelect={setActiveSection}
+          profile={profile}
+          summary={summary}
+          formatCurrency={formatCurrency}
+        />
         <div className="dashboard-main">
           <section className="section dashboard-hero">
             <div className="dashboard-header">
@@ -516,169 +406,6 @@ export default function Dashboard() {
 
           {activeSection === "overview" && (
             <section className="section dashboard-analytics">
-              <div className="panel">
-                <h3>Profile & business info</h3>
-                <p className="subtext">
-                  Update your vendor details and business information.
-                </p>
-                <form className="form-stack" onSubmit={handleProfileSubmit}>
-                  <div className="form-grid">
-                    <label>
-                      <span>First name</span>
-                      <input
-                        type="text"
-                        value={profileForm.firstName}
-                        onChange={(event) =>
-                          setProfileForm({
-                            ...profileForm,
-                            firstName: event.target.value,
-                          })
-                        }
-                        required
-                      />
-                    </label>
-                    <label>
-                      <span>Last name</span>
-                      <input
-                        type="text"
-                        value={profileForm.lastName}
-                        onChange={(event) =>
-                          setProfileForm({
-                            ...profileForm,
-                            lastName: event.target.value,
-                          })
-                        }
-                        required
-                      />
-                    </label>
-                    <label>
-                      <span>Email</span>
-                      <input
-                        type="email"
-                        value={profileForm.email}
-                        onChange={(event) =>
-                          setProfileForm({
-                            ...profileForm,
-                            email: event.target.value,
-                          })
-                        }
-                        required
-                      />
-                    </label>
-                    <label>
-                      <span>Phone</span>
-                      <input
-                        type="tel"
-                        value={profileForm.phone}
-                        onChange={(event) =>
-                          setProfileForm({
-                            ...profileForm,
-                            phone: event.target.value,
-                          })
-                        }
-                      />
-                    </label>
-                    <label>
-                      <span>Business name</span>
-                      <input
-                        type="text"
-                        value={profileForm.businessName}
-                        onChange={(event) =>
-                          setProfileForm({
-                            ...profileForm,
-                            businessName: event.target.value,
-                          })
-                        }
-                        required
-                      />
-                    </label>
-                    <label>
-                      <span>Location</span>
-                      <input
-                        type="text"
-                        value={profileForm.location}
-                        onChange={(event) =>
-                          setProfileForm({
-                            ...profileForm,
-                            location: event.target.value,
-                          })
-                        }
-                        required
-                      />
-                    </label>
-                    <label>
-                      <span>Primary products</span>
-                      <input
-                        type="text"
-                        value={profileForm.primaryProducts}
-                        onChange={(event) =>
-                          setProfileForm({
-                            ...profileForm,
-                            primaryProducts: event.target.value,
-                          })
-                        }
-                        required
-                      />
-                    </label>
-                    <label>
-                      <span>Staff count</span>
-                      <input
-                        type="number"
-                        min={1}
-                        value={profileForm.staffCount}
-                        onChange={(event) =>
-                          setProfileForm({
-                            ...profileForm,
-                            staffCount: event.target.value,
-                          })
-                        }
-                        required
-                      />
-                    </label>
-                    <label>
-                      <span>Product types (comma separated)</span>
-                      <input
-                        type="text"
-                        value={profileForm.productTypes}
-                        onChange={(event) =>
-                          setProfileForm({
-                            ...profileForm,
-                            productTypes: event.target.value,
-                          })
-                        }
-                        placeholder="Fresh produce, Spices"
-                      />
-                    </label>
-                    <label>
-                      <span>Other product types</span>
-                      <input
-                        type="text"
-                        value={profileForm.otherProductTypes}
-                        onChange={(event) =>
-                          setProfileForm({
-                            ...profileForm,
-                            otherProductTypes: event.target.value,
-                          })
-                        }
-                      />
-                    </label>
-                  </div>
-                  {profileStatus && (
-                    <p
-                      className={`form-alert ${
-                        profileStatus.includes("success")
-                          ? "success"
-                          : "error"
-                      }`}
-                    >
-                      {profileStatus}
-                    </p>
-                  )}
-                  <button className="button solid" type="submit">
-                    Save profile
-                  </button>
-                </form>
-              </div>
               <div className="panel">
                 <h3>Sales activity (last 7 days)</h3>
                 <div className="chart-list">
@@ -1163,6 +890,8 @@ export default function Dashboard() {
               </div>
             </section>
           )}
+
+          {activeSection === "settings" && <SettingsPage />}
         </div>
       </div>
     </div>

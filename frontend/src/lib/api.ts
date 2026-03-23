@@ -1,6 +1,16 @@
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api";
 export const API_BASE_URL = API_URL.replace(/\/api\/?$/, "");
 
+export const resolveMediaUrl = (url?: string | null) => {
+  if (!url) {
+    return url;
+  }
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+  return `${API_BASE_URL}${url}`;
+};
+
 const getToken = () => localStorage.getItem("vendor_token");
 const setToken = (token: string) => localStorage.setItem("vendor_token", token);
 const clearToken = () => localStorage.removeItem("vendor_token");
@@ -84,6 +94,7 @@ export type VendorProfile = {
   email: string;
   phone?: string;
   avatarUrl?: string | null;
+  storeLogoUrl?: string | null;
   businessName: string;
   location: string;
   primaryProducts: string;
@@ -115,6 +126,35 @@ export type SalesSummary = {
   revenue: number;
   units: number;
   salesCount: number;
+};
+
+export type VendorSettingsProfile = {
+  vendorName: string;
+  shopName: string;
+  phone: string;
+  email: string;
+  location: string;
+  avatarUrl?: string | null;
+  storeLogoUrl?: string | null;
+};
+
+export type NotificationSettings = {
+  smsEnabled: boolean;
+  emailEnabled: boolean;
+  saleConfirmation: boolean;
+  lowStockAlerts: boolean;
+  dailySummary: boolean;
+};
+
+export type InventorySettings = {
+  lowStockThreshold: number;
+  defaultUnit: string;
+};
+
+export type VendorSettings = {
+  profile: VendorSettingsProfile;
+  notifications: NotificationSettings;
+  inventory: InventorySettings;
 };
 
 export const login = async (payload: { email: string; password: string }) => {
@@ -165,6 +205,15 @@ export const uploadAvatar = async (file: File) => {
   return requestFormData<{ avatarUrl: string }>("/vendors/me/avatar", formData);
 };
 
+export const uploadStoreLogo = async (file: File) => {
+  const formData = new FormData();
+  formData.append("logo", file);
+  return requestFormData<{ storeLogoUrl: string }>(
+    "/vendors/me/logo",
+    formData
+  );
+};
+
 export const getProducts = async () =>
   request<{ products: Product[] }>("/products", { method: "GET" });
 
@@ -200,6 +249,37 @@ export const downloadSalesReport = async (payload: {
 }) =>
   requestBlob("/reports/sales", {
     method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+export const getSettings = async () =>
+  request<VendorSettings>("/settings", { method: "GET" });
+
+export const updateSettingsProfile = async (payload: VendorSettingsProfile) =>
+  request<VendorSettingsProfile>("/settings/profile", {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+
+export const updateSettingsNotifications = async (payload: NotificationSettings) =>
+  request<NotificationSettings>("/settings/notifications", {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+
+export const updateSettingsInventory = async (payload: InventorySettings) =>
+  request<InventorySettings>("/settings/inventory", {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+
+export const updateSettingsPassword = async (payload: {
+  oldPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}) =>
+  request<{ message: string }>("/settings/password", {
+    method: "PUT",
     body: JSON.stringify(payload),
   });
 

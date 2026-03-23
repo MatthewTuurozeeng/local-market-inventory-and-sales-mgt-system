@@ -1,4 +1,8 @@
 import mongoose, { type Document, Schema } from "mongoose";
+import type {
+  InventorySettings,
+  NotificationSettings,
+} from "../types/settings.ts";
 
 export interface VendorInput {
   firstName: string;
@@ -8,6 +12,7 @@ export interface VendorInput {
   phone: string;
   passwordHash: string;
   avatarUrl?: string | null;
+  storeLogoUrl?: string | null;
   resetToken?: string | null;
   resetTokenExpires?: string | null;
   idType: string;
@@ -32,6 +37,7 @@ export interface VendorUpdateInput {
   email?: string;
   phone?: string;
   avatarUrl?: string | null;
+  storeLogoUrl?: string | null;
   idType?: string;
   idNumber?: string;
   businessName?: string;
@@ -85,6 +91,16 @@ export interface SalesReportRow {
   productCategory: string;
 }
 
+export interface SettingsInput {
+  vendorId: string;
+  notifications: NotificationSettings;
+  inventory: InventorySettings;
+}
+
+export interface SettingsRecord extends SettingsInput {
+  id: string;
+}
+
 export interface PublicStatsSummary {
   totalVendors: number;
   totalSales: number;
@@ -110,6 +126,13 @@ interface SaleDocument extends Omit<SaleInput, "productId">, Document {
   productId: mongoose.Types.ObjectId;
 }
 
+interface SettingsDocument extends Document {
+  _id: mongoose.Types.ObjectId;
+  vendorId: mongoose.Types.ObjectId;
+  notifications: NotificationSettings;
+  inventory: InventorySettings;
+}
+
 const VendorSchema = new Schema<VendorDocument>({
   firstName: { type: String, required: true },
   middleName: { type: String },
@@ -118,6 +141,7 @@ const VendorSchema = new Schema<VendorDocument>({
   phone: { type: String, required: true },
   passwordHash: { type: String, required: true },
   avatarUrl: { type: String },
+  storeLogoUrl: { type: String },
   resetToken: { type: String },
   resetTokenExpires: { type: String },
   idType: { type: String, required: true },
@@ -151,9 +175,30 @@ const SaleSchema = new Schema<SaleDocument>({
   soldAt: { type: String, required: true },
 });
 
+const SettingsSchema = new Schema<SettingsDocument>({
+  vendorId: {
+    type: Schema.Types.ObjectId,
+    ref: "Vendor",
+    required: true,
+    unique: true,
+  },
+  notifications: {
+    smsEnabled: { type: Boolean, default: true },
+    emailEnabled: { type: Boolean, default: true },
+    saleConfirmation: { type: Boolean, default: true },
+    lowStockAlerts: { type: Boolean, default: true },
+    dailySummary: { type: Boolean, default: true },
+  },
+  inventory: {
+    lowStockThreshold: { type: Number, default: 5 },
+    defaultUnit: { type: String, default: "pieces" },
+  },
+});
+
 const Vendor = mongoose.model<VendorDocument>("Vendor", VendorSchema);
 const Product = mongoose.model<ProductDocument>("Product", ProductSchema);
 const Sale = mongoose.model<SaleDocument>("Sale", SaleSchema);
+const Settings = mongoose.model<SettingsDocument>("Settings", SettingsSchema);
 
 const normalizeVendor = (vendor: VendorDocument | null): VendorRecord | null =>
   vendor ? { ...(vendor.toObject() as VendorInput), id: vendor._id.toString() } : null;
@@ -173,6 +218,18 @@ const normalizeSale = (sale: SaleDocument | null): SaleRecord | null =>
         ...(sale.toObject() as SaleInput),
         id: sale._id.toString(),
         vendorId: sale.vendorId.toString(),
+      }
+    : null;
+
+const normalizeSettings = (
+  settings: SettingsDocument | null
+): SettingsRecord | null =>
+  settings
+    ? {
+        vendorId: settings.vendorId.toString(),
+        notifications: settings.notifications,
+        inventory: settings.inventory,
+        id: settings._id.toString(),
       }
     : null;
 
@@ -237,6 +294,29 @@ const updateVendor = async (
     { $set: Object.fromEntries(entries) }
   );
   return getVendorById(vendorId);
+};
+
+const getSettingsByVendorId = async (
+  vendorId: string
+): Promise<SettingsRecord> => {
+  const existing = await Settings.findOne({ vendorId });
+  if (existing) {
+    return normalizeSettings(existing) as SettingsRecord;
+  }
+  const created = await Settings.create({ vendorId });
+  return normalizeSettings(created) as SettingsRecord;
+};
+
+const updateSettingsByVendorId = async (
+  vendorId: string,
+  updates: Partial<SettingsInput>
+): Promise<SettingsRecord> => {
+  const updated = await Settings.findOneAndUpdate(
+    { vendorId },
+    { $set: updates },
+    { new: true, upsert: true }
+  );
+  return normalizeSettings(updated) as SettingsRecord;
 };
 
 const listProducts = async (vendorId: string): Promise<ProductRecord[]> => {
@@ -419,6 +499,8 @@ export {
   updateVendorPassword,
   getVendorById,
   updateVendor,
+  getSettingsByVendorId,
+  updateSettingsByVendorId,
   listProducts,
   createProduct,
   updateProductStock,
