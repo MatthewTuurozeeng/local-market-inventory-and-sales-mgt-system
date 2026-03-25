@@ -87,7 +87,13 @@ export default function ProfileSettings({
                   }}
                 />
               </label>
-              {avatarStatus && <span className="form-helper">{avatarStatus}</span>}
+              {avatarStatus && (
+                (avatarStatus.toLowerCase().includes("updated") ? (
+                  <span className="form-helper">{avatarStatus}</span>
+                ) : (
+                  <p className="form-alert error">{avatarStatus}</p>
+                ))
+              )}
             </div>
           </div>
           <div className="profile-media-card">
@@ -120,7 +126,13 @@ export default function ProfileSettings({
                   }}
                 />
               </label>
-              {logoStatus && <span className="form-helper">{logoStatus}</span>}
+              {logoStatus && (
+                (logoStatus.toLowerCase().includes("updated") ? (
+                  <span className="form-helper">{logoStatus}</span>
+                ) : (
+                  <p className="form-alert error">{logoStatus}</p>
+                ))
+              )}
             </div>
           </div>
         </div>

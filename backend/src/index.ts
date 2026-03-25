@@ -1,4 +1,6 @@
 import express, { type NextFunction, type Request, type Response } from "express";
+import multer from "multer";
+import { MAX_UPLOAD_BYTES } from "./utils/uploads.ts";
 import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
@@ -43,9 +45,18 @@ app.use((req: Request, res: Response) => {
   res.status(404).json({ message: "Route not found" });
 });
 
-app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   // eslint-disable-next-line no-console
   console.error(err);
+
+  // Handle multer file size limit errors explicitly so the client receives
+  // a clear 4xx response instead of a generic 500. Multer emits a
+  // MulterError or sets err.code === 'LIMIT_FILE_SIZE'.
+  if (err instanceof multer.MulterError || err?.code === "LIMIT_FILE_SIZE") {
+    const mb = Math.round((MAX_UPLOAD_BYTES / (1024 * 1024)) * 100) / 100;
+    return res.status(413).json({ message: `File too large. Maximum allowed size is ${mb}MB.` });
+  }
+
   res.status(500).json({ message: "Server error" });
 });
 
