@@ -48,4 +48,31 @@ export const logoUpload = multer({
   fileFilter: imageFileFilter,
 });
 
+const isImageFile = (filename: string) =>
+  [".jpg", ".jpeg", ".png", ".webp"].includes(path.extname(filename).toLowerCase());
+
+export const cleanupUnusedUploads = async (usedUrls: string[]) => {
+  const usedFiles = new Set(
+    usedUrls
+      .filter(Boolean)
+      .map((url) => url.split("/").pop() || "")
+      .filter(Boolean)
+  );
+
+  try {
+    const entries = await fs.readdir(uploadDir, { withFileTypes: true });
+    const deletions = entries
+      .filter((entry) => entry.isFile())
+      .map((entry) => entry.name)
+      .filter((name) => isImageFile(name))
+      .filter((name) => !usedFiles.has(name))
+      .map((name) => fs.unlink(path.join(uploadDir, name)));
+
+    await Promise.all(deletions);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error("Upload cleanup failed", error);
+  }
+};
+
 export { uploadDir };

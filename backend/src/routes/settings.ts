@@ -107,6 +107,12 @@ router.put(
       businessCategory: req.body.businessCategory as string | undefined,
       productFocus: req.body.productFocus as string | undefined,
       shopDescription: req.body.shopDescription as string | undefined,
+      avatarUrl:
+        req.body.avatarUrl !== undefined ? (req.body.avatarUrl as string | null) : undefined,
+      storeLogoUrl:
+        req.body.storeLogoUrl !== undefined
+          ? (req.body.storeLogoUrl as string | null)
+          : undefined,
     });
 
     if (!updated) {

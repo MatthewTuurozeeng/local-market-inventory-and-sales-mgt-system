@@ -6,9 +6,11 @@ const profileSettingsValidators = [
   body("phone").optional().isString().notEmpty(),
   body("email").optional().isEmail().normalizeEmail(),
   body("location").optional().isString().notEmpty(),
-  body("businessCategory").optional().isString().notEmpty(),
-  body("productFocus").optional().isString().notEmpty(),
-  body("shopDescription").optional().isString().notEmpty(),
+  body("businessCategory").optional({ checkFalsy: true }).isString(),
+  body("productFocus").optional({ checkFalsy: true }).isString(),
+  body("shopDescription").optional({ checkFalsy: true }).isString(),
+  body("avatarUrl").optional({ nullable: true, checkFalsy: true }).isString(),
+  body("storeLogoUrl").optional({ nullable: true, checkFalsy: true }).isString(),
 ];
 
 const notificationSettingsValidators = [

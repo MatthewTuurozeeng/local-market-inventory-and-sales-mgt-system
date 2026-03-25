@@ -1,6 +1,6 @@
 import express, { type NextFunction, type Request, type Response } from "express";
 import multer from "multer";
-import { MAX_UPLOAD_BYTES } from "./utils/uploads.ts";
+import { MAX_UPLOAD_BYTES, cleanupUnusedUploads } from "./utils/uploads.ts";
 import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
@@ -14,6 +14,7 @@ import summaryRoutes from "./routes/summary.ts";
 import reportRoutes from "./routes/reports.ts";
 import publicRoutes from "./routes/public.ts";
 import settingsRoutes from "./routes/settings.ts";
+import { listVendorMediaUrls } from "./models/database.ts";
 
 dotenv.config();
 
@@ -65,6 +66,13 @@ mongoose
   .then(() => {
     // eslint-disable-next-line no-console
     console.log("MongoDB connected");
+    const runCleanup = async () => {
+      const usedUrls = await listVendorMediaUrls();
+      await cleanupUnusedUploads(usedUrls);
+    };
+
+    runCleanup();
+    setInterval(runCleanup, 1000 * 60 * 60 * 6);
     app.listen(PORT, () => {
       // eslint-disable-next-line no-console
       console.log(`Vendor API listening on ${PORT}`);

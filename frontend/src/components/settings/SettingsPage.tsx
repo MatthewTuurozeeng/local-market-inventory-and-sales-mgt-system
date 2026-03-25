@@ -123,6 +123,15 @@ export default function SettingsPage() {
   const [logoStatus, setLogoStatus] = useState("");
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [logoUploading, setLogoUploading] = useState(false);
+  const [pendingAvatarUrl, setPendingAvatarUrl] = useState<string | null | undefined>(
+    undefined
+  );
+  const [pendingLogoUrl, setPendingLogoUrl] = useState<string | null | undefined>(
+    undefined
+  );
+  const [initialProfile, setInitialProfile] = useState<VendorSettingsProfile>(
+    defaultProfile
+  );
 
   const loadSettings = async () => {
     if (useMocks) {
@@ -151,6 +160,13 @@ export default function SettingsPage() {
         avatarUrl: resolveMediaUrl(settings.profile.avatarUrl),
         storeLogoUrl: resolveMediaUrl(settings.profile.storeLogoUrl),
       });
+      setInitialProfile({
+        ...settings.profile,
+        avatarUrl: resolveMediaUrl(settings.profile.avatarUrl),
+        storeLogoUrl: resolveMediaUrl(settings.profile.storeLogoUrl),
+      });
+      setPendingAvatarUrl(undefined);
+      setPendingLogoUrl(undefined);
       setNotificationForm(settings.notifications);
       setInventoryForm(settings.inventory);
     } catch (error) {
@@ -172,12 +188,32 @@ export default function SettingsPage() {
     setProfileStatus({ message: "", tone: "" });
     if (useMocks) {
       setProfileStatus({ message: "Profile saved locally.", tone: "success" });
+      setInitialProfile(profileForm);
+      setPendingAvatarUrl(undefined);
+      setPendingLogoUrl(undefined);
       return;
     }
     try {
       setProfileSaving(true);
-      const updated = await updateSettingsProfile(profileForm);
-      setProfileForm(updated);
+      const nextAvatarUrl =
+        pendingAvatarUrl !== undefined ? pendingAvatarUrl : profileForm.avatarUrl;
+      const nextLogoUrl =
+        pendingLogoUrl !== undefined ? pendingLogoUrl : profileForm.storeLogoUrl;
+      const payload: VendorSettingsProfile = {
+        ...profileForm,
+        avatarUrl: nextAvatarUrl ?? null,
+        storeLogoUrl: nextLogoUrl ?? null,
+      };
+      const updated = await updateSettingsProfile(payload);
+      const normalizedProfile = {
+        ...updated,
+        avatarUrl: resolveMediaUrl(updated.avatarUrl),
+        storeLogoUrl: resolveMediaUrl(updated.storeLogoUrl),
+      };
+      setProfileForm(normalizedProfile);
+      setInitialProfile(normalizedProfile);
+      setPendingAvatarUrl(undefined);
+      setPendingLogoUrl(undefined);
       setProfileStatus({
         message: "Profile updated successfully.",
         tone: "success",
@@ -195,17 +231,14 @@ export default function SettingsPage() {
   const handleAvatarUpload = async (file: File) => {
     setAvatarStatus("");
     if (useMocks) {
-      setAvatarStatus("Photo updated locally.");
+      setAvatarStatus("Photo ready. Save to apply.");
       return;
     }
     try {
       setAvatarUploading(true);
       const result = await uploadAvatar(file);
-      setProfileForm((prev) => ({
-        ...prev,
-        avatarUrl: resolveMediaUrl(result.avatarUrl),
-      }));
-      setAvatarStatus("Profile photo updated.");
+  setPendingAvatarUrl(resolveMediaUrl(result.avatarUrl) ?? null);
+      setAvatarStatus("Photo ready. Save to apply.");
     } catch (error) {
       setAvatarStatus(
         (error as Error).message || "Unable to upload profile photo."
@@ -218,17 +251,14 @@ export default function SettingsPage() {
   const handleLogoUpload = async (file: File) => {
     setLogoStatus("");
     if (useMocks) {
-      setLogoStatus("Logo updated locally.");
+      setLogoStatus("Logo ready. Save to apply.");
       return;
     }
     try {
       setLogoUploading(true);
       const result = await uploadStoreLogo(file);
-      setProfileForm((prev) => ({
-        ...prev,
-        storeLogoUrl: resolveMediaUrl(result.storeLogoUrl),
-      }));
-      setLogoStatus("Store logo updated.");
+  setPendingLogoUrl(resolveMediaUrl(result.storeLogoUrl) ?? null);
+      setLogoStatus("Logo ready. Save to apply.");
     } catch (error) {
       setLogoStatus(
         (error as Error).message || "Unable to upload store logo."
@@ -237,6 +267,34 @@ export default function SettingsPage() {
       setLogoUploading(false);
     }
   };
+
+  const handleRemoveAvatar = () => {
+    setPendingAvatarUrl(null);
+    setAvatarStatus("Photo removed. Save to apply.");
+  };
+
+  const handleRemoveLogo = () => {
+    setPendingLogoUrl(null);
+    setLogoStatus("Logo removed. Save to apply.");
+  };
+
+  const effectiveAvatarUrl =
+    pendingAvatarUrl !== undefined ? pendingAvatarUrl : profileForm.avatarUrl;
+  const effectiveLogoUrl =
+    pendingLogoUrl !== undefined ? pendingLogoUrl : profileForm.storeLogoUrl;
+  const currentProfileSnapshot = {
+    ...profileForm,
+    avatarUrl: effectiveAvatarUrl ?? null,
+    storeLogoUrl: effectiveLogoUrl ?? null,
+  };
+  const initialProfileSnapshot = {
+    ...initialProfile,
+    avatarUrl: initialProfile.avatarUrl ?? null,
+    storeLogoUrl: initialProfile.storeLogoUrl ?? null,
+  };
+  const hasUnsavedChanges =
+    JSON.stringify(currentProfileSnapshot) !==
+    JSON.stringify(initialProfileSnapshot);
 
   const handleNotificationSubmit = async (
     event: React.FormEvent<HTMLFormElement>
@@ -418,8 +476,26 @@ export default function SettingsPage() {
         statusMessage={profileStatus.message}
         statusTone={profileStatus.tone}
         isSaving={profileSaving}
+        isSaveDisabled={!hasUnsavedChanges}
+        hasUnsavedChanges={hasUnsavedChanges}
         onAvatarUpload={handleAvatarUpload}
         onLogoUpload={handleLogoUpload}
+        onRemoveAvatar={handleRemoveAvatar}
+        onRemoveLogo={handleRemoveLogo}
+        avatarPendingLabel={
+          pendingAvatarUrl !== undefined
+            ? pendingAvatarUrl
+              ? "Pending save"
+              : "Pending removal"
+            : ""
+        }
+        logoPendingLabel={
+          pendingLogoUrl !== undefined
+            ? pendingLogoUrl
+              ? "Pending save"
+              : "Pending removal"
+            : ""
+        }
         avatarStatus={avatarStatus}
         logoStatus={logoStatus}
         isAvatarUploading={avatarUploading}

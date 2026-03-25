@@ -395,6 +395,22 @@ const getSalesSummary = async (vendorId: string): Promise<SalesSummary> => {
   return summary[0] || { revenue: 0, units: 0, salesCount: 0 };
 };
 
+const listVendorMediaUrls = async (): Promise<string[]> => {
+  const vendors = await Vendor.find({}, { avatarUrl: 1, storeLogoUrl: 1 })
+    .lean()
+    .exec();
+  const urls: string[] = [];
+  vendors.forEach((vendor) => {
+    if (vendor.avatarUrl) {
+      urls.push(String(vendor.avatarUrl));
+    }
+    if (vendor.storeLogoUrl) {
+      urls.push(String(vendor.storeLogoUrl));
+    }
+  });
+  return urls;
+};
+
 const getPublicStatsSummary = async (): Promise<PublicStatsSummary> => {
   const [totalVendors, totals] = await Promise.all([
     Vendor.countDocuments(),
@@ -518,4 +534,5 @@ export {
   listSalesByDateRange,
   getSalesSummary,
   getPublicStatsSummary,
+  listVendorMediaUrls,
 };

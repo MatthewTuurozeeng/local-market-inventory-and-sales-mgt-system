@@ -119,10 +119,6 @@ router.post(
     }
 
     const avatarUrl = `/uploads/${req.file.filename}`;
-    const updated = await updateVendor(vendorId, { avatarUrl });
-    if (!updated) {
-      return res.status(404).json({ message: "Vendor not found" });
-    }
 
     return res.json({ avatarUrl });
   }
@@ -142,10 +138,6 @@ router.post(
     }
 
     const storeLogoUrl = `/uploads/${req.file.filename}`;
-    const updated = await updateVendor(vendorId, { storeLogoUrl });
-    if (!updated) {
-      return res.status(404).json({ message: "Vendor not found" });
-    }
 
     return res.json({ storeLogoUrl });
   }

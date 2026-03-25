@@ -7,8 +7,14 @@ type ProfileSettingsProps = {
   statusMessage: string;
   statusTone: "success" | "error" | "";
   isSaving: boolean;
+  isSaveDisabled: boolean;
+  hasUnsavedChanges: boolean;
   onAvatarUpload: (file: File) => void;
   onLogoUpload: (file: File) => void;
+  onRemoveAvatar: () => void;
+  onRemoveLogo: () => void;
+  avatarPendingLabel: string;
+  logoPendingLabel: string;
   avatarStatus: string;
   logoStatus: string;
   isAvatarUploading: boolean;
@@ -36,8 +42,14 @@ export default function ProfileSettings({
   statusMessage,
   statusTone,
   isSaving,
+  isSaveDisabled,
+  hasUnsavedChanges,
   onAvatarUpload,
   onLogoUpload,
+  onRemoveAvatar,
+  onRemoveLogo,
+  avatarPendingLabel,
+  logoPendingLabel,
   avatarStatus,
   logoStatus,
   isAvatarUploading,
@@ -51,7 +63,12 @@ export default function ProfileSettings({
 }: ProfileSettingsProps) {
   return (
     <div className="panel profile-panel">
-      <h3>Profile & shop information</h3>
+      <div className="panel-header">
+        <h3>Profile & shop information</h3>
+        {hasUnsavedChanges && (
+          <span className="unsaved-badge">Unsaved changes</span>
+        )}
+      </div>
       <p className="subtext">Keep your vendor and shop details up to date.</p>
       <div className="profile-settings">
         <div className="profile-media-grid">
@@ -87,6 +104,17 @@ export default function ProfileSettings({
                   }}
                 />
               </label>
+              <button
+                type="button"
+                className="button ghost"
+                onClick={onRemoveAvatar}
+                disabled={isAvatarUploading}
+              >
+                Remove
+              </button>
+              {avatarPendingLabel && (
+                <span className="form-helper">{avatarPendingLabel}</span>
+              )}
               {avatarStatus && (
                 (avatarStatus.toLowerCase().includes("updated") ? (
                   <span className="form-helper">{avatarStatus}</span>
@@ -126,6 +154,17 @@ export default function ProfileSettings({
                   }}
                 />
               </label>
+              <button
+                type="button"
+                className="button ghost"
+                onClick={onRemoveLogo}
+                disabled={isLogoUploading}
+              >
+                Remove
+              </button>
+              {logoPendingLabel && (
+                <span className="form-helper">{logoPendingLabel}</span>
+              )}
               {logoStatus && (
                 (logoStatus.toLowerCase().includes("updated") ? (
                   <span className="form-helper">{logoStatus}</span>
@@ -237,7 +276,11 @@ export default function ProfileSettings({
         {statusMessage && (
           <p className={`form-alert ${statusTone}`}>{statusMessage}</p>
         )}
-        <button className="button solid" type="submit" disabled={isSaving}>
+        <button
+          className="button solid"
+          type="submit"
+          disabled={isSaving || isSaveDisabled}
+        >
           {isSaving ? "Saving..." : "Save profile"}
         </button>
       </form>
