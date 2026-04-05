@@ -86,7 +86,7 @@ export default function Home() {
             <p className="eyebrow">Built for market vendors</p>
             <h1>Run your stall with clarity, speed, and confidence.</h1>
             <p className="subtext">
-              Local Market Inventory & Sales helps you track stock, record sales, and
+              Daakye Vendor Space Inventory & Sales helps you track stock, record sales, and
               understand your best-performing products—all from your phone.
             </p>
             <div className="hero-actions">

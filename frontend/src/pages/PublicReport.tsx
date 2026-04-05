@@ -99,7 +99,7 @@ export default function PublicReport() {
         <div className="hero-content">
           <div className="hero-text">
             <p className="eyebrow">Market Momentum Report</p>
-            <h1>See what vendors are achieving with Local Market.</h1>
+            <h1>See what vendors are achieving with Daakye Vendor Space.</h1>
             <p className="subtext">
               Every number below is powered by real market stalls using the platform to
               track inventory, record sales, and grow customer trust. Join them and show
