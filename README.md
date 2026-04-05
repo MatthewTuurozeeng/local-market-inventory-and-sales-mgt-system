@@ -10,9 +10,9 @@ A student software engineering project that helps Ghanaian market vendors manage
 - Analytics dashboard (top sellers, trends)
 
 ## Tech Stack
-- **Frontend:** React (mobile‑first web)
+- **Frontend:** Vite + React + TypeScript
 - **Backend:** Node.js + Express
-- **Database:** MongoDB (Atlas)
+- **Database:** MongoDB (local or Atlas)
 - **Auth:** JWT
 - **CI/CD:** GitHub Actions
 
@@ -21,12 +21,49 @@ A student software engineering project that helps Ghanaian market vendors manage
 - `docs/backlog.md` — Product backlog with epics & story points
 - `docs/api-spec.md` — API endpoints and schemas
 
-## Getting Started 
-> This repo currently contains project planning artifacts. Code scaffolding will be added during Sprint 1.
+## Getting Started
+This repo now includes both the frontend and backend apps.
 
-When implementation begins, the repo will include:
-- `frontend/` React app
-- `backend/` Express API
+### Frontend
+```zsh
+cd frontend
+npm install
+npm run dev
+```
+
+### Backend
+```zsh
+cd backend
+npm install
+cp .env.example .env
+npm run dev
+```
+
+## Backend Architecture
+The backend uses a TypeScript + Express structure with clear separation of responsibilities:
+
+- `backend/src/index.ts` — Express app bootstrap, middleware registration, and route wiring.
+- `backend/src/routes/` — HTTP route handlers (auth, vendors, products, sales, reports, summary).
+- `backend/src/middleware/`
+	- `auth/` — JWT auth middleware and token helpers.
+	- `validators/` — request validation chains for routes.
+- `backend/src/models/` — Mongoose schemas + database helpers.
+- `backend/src/services/` — reusable business logic (e.g., report generation).
+- `backend/src/types/` — shared TypeScript types + Express request augmentation.
+- `backend/src/utils/` — scripts and utilities (e.g., seed data).
+
+### Seed sample data (fixed login)
+```zsh
+cd backend
+npm run seed
+```
+
+Sample login:
+- Email: `vendor@market.com`
+- Password: `Test@1234`
+
+### Mock dashboard data (optional)
+Set `VITE_USE_MOCKS=true` in `frontend/.env` to show hardcoded dashboard data without logging in.
 
 ##  Definition of Done (DoD)
 - Feature implemented and tested
@@ -44,5 +81,12 @@ When implementation begins, the repo will include:
 - **Sprint 2:** Sales, order tracking, notifications
 - **Sprint 3:** Analytics, UI polish, final testing
 
+
+# Frontend (Landing Page)
+
+The landing page lives in `frontend/` with shared styles in `src/index.css`.
+
+## Notes
+- Color palette: #734A3B, #593F24, #E6F4FF, #122E16.
 ## License
 Student project for CS 415 (Software Engineering).
