@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import fs from "fs";
 
-// Load env from backend/.env if present
+// load env from backend/.env if present
 const envPath = join(dirname(fileURLToPath(import.meta.url)), "..", ".env");
 if (fs.existsSync(envPath)) {
   dotenv.config({ path: envPath });

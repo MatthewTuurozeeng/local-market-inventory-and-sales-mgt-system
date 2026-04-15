@@ -21,6 +21,9 @@ A student software engineering project that helps Ghanaian market vendors manage
 - `docs/backlog.md` — Product backlog with epics & story points
 - `docs/api-spec.md` — API endpoints and schemas
 
+## Design
+- Figma: https://www.figma.com/design/uiAnS5NCsPxD9k4GVZ2EGK/Local-Market-Inventory-management?node-id=0-1&t=6xRPywUIBN2bmnH1-0
+
 ## Getting Started
 This repo now includes both the frontend and backend apps.
 
