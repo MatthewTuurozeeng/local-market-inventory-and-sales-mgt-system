@@ -14,10 +14,24 @@ import {
   type NotificationSettings,
   type VendorSettingsProfile,
 } from "../../lib/api.ts";
+
 import ProfileSettings from "./ProfileSettings.tsx";
 import ThemeSettings from "./ThemeSettings.tsx";
 import NotificationSettingsPanel from "./NotificationSettings.tsx";
 import InventorySettingsPanel from "./InventorySettings.tsx";
+import { FaPalette, FaBell, FaBoxes, FaFileExport } from "react-icons/fa";
+
+function SettingsCard({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
+  return (
+    <div className="settings-card panel">
+      <div className="settings-card-header">
+        {icon}
+        <span>{title}</span>
+      </div>
+      <div className="settings-card-content">{children}</div>
+    </div>
+  );
+}
 
 type StatusTone = "success" | "error" | "";
 
@@ -468,80 +482,81 @@ export default function SettingsPage() {
   }
 
   return (
-    <section className="section grid two settings-grid">
-      <ProfileSettings
-        values={profileForm}
-        onChange={setProfileForm}
-        onSubmit={handleProfileSubmit}
-        statusMessage={profileStatus.message}
-        statusTone={profileStatus.tone}
-        isSaving={profileSaving}
-        isSaveDisabled={!hasUnsavedChanges}
-        hasUnsavedChanges={hasUnsavedChanges}
-        onAvatarUpload={handleAvatarUpload}
-        onLogoUpload={handleLogoUpload}
-        onRemoveAvatar={handleRemoveAvatar}
-        onRemoveLogo={handleRemoveLogo}
-        avatarPendingLabel={
-          pendingAvatarUrl !== undefined
-            ? pendingAvatarUrl
-              ? "Pending save"
-              : "Pending removal"
-            : ""
-        }
-        logoPendingLabel={
-          pendingLogoUrl !== undefined
-            ? pendingLogoUrl
-              ? "Pending save"
-              : "Pending removal"
-            : ""
-        }
-        avatarStatus={avatarStatus}
-        logoStatus={logoStatus}
-        isAvatarUploading={avatarUploading}
-        isLogoUploading={logoUploading}
-        passwordValues={passwordForm}
-        onPasswordChange={setPasswordForm}
-        onPasswordSubmit={handlePasswordSubmit}
-        passwordStatus={passwordStatus.message}
-        passwordTone={passwordStatus.tone}
-        isPasswordSaving={passwordSaving}
-      />
-      <ThemeSettings />
-      <NotificationSettingsPanel
-        values={notificationForm}
-        onChange={setNotificationForm}
-        onSubmit={handleNotificationSubmit}
-        statusMessage={notificationStatus.message}
-        statusTone={notificationStatus.tone}
-        isSaving={notificationSaving}
-      />
-      <InventorySettingsPanel
-        values={inventoryForm}
-        onChange={setInventoryForm}
-        onSubmit={handleInventorySubmit}
-        statusMessage={inventoryStatus.message}
-        statusTone={inventoryStatus.tone}
-        isSaving={inventorySaving}
-      />
-      <div className="panel">
-        <h3>Data & exports</h3>
-        <p className="subtext">
-          Download your sales and inventory data for reporting or backups.
-        </p>
-        {exportStatus.message && (
-          <p className={`form-alert ${exportStatus.tone}`}>
-            {exportStatus.message}
-          </p>
-        )}
-        <button
-          className="button solid"
-          type="button"
-          onClick={handleExport}
-          disabled={exporting}
-        >
-          {exporting ? "Preparing export..." : "Export sales & inventory"}
-        </button>
+    <section className="section settings-grid">
+      <div className="settings-grid-row">
+        <SettingsCard icon={<FaBoxes />} title="Profile & Shop">
+          <ProfileSettings
+            values={profileForm}
+            onChange={setProfileForm}
+            onSubmit={handleProfileSubmit}
+            statusMessage={profileStatus.message}
+            statusTone={profileStatus.tone}
+            isSaving={profileSaving}
+            isSaveDisabled={!hasUnsavedChanges}
+            hasUnsavedChanges={hasUnsavedChanges}
+            onAvatarUpload={handleAvatarUpload}
+            onLogoUpload={handleLogoUpload}
+            onRemoveAvatar={handleRemoveAvatar}
+            onRemoveLogo={handleRemoveLogo}
+            avatarPendingLabel={pendingAvatarUrl !== undefined ? (pendingAvatarUrl ? "Pending save" : "Pending removal") : ""}
+            logoPendingLabel={pendingLogoUrl !== undefined ? (pendingLogoUrl ? "Pending save" : "Pending removal") : ""}
+            avatarStatus={avatarStatus}
+            logoStatus={logoStatus}
+            isAvatarUploading={avatarUploading}
+            isLogoUploading={logoUploading}
+            passwordValues={passwordForm}
+            onPasswordChange={setPasswordForm}
+            onPasswordSubmit={handlePasswordSubmit}
+            passwordStatus={passwordStatus.message}
+            passwordTone={passwordStatus.tone}
+            isPasswordSaving={passwordSaving}
+          />
+        </SettingsCard>
+        <SettingsCard icon={<FaPalette />} title="Appearance">
+          <ThemeSettings />
+        </SettingsCard>
+      </div>
+      <div className="settings-grid-row">
+        <SettingsCard icon={<FaBell />} title="Notifications">
+          <NotificationSettingsPanel
+            values={notificationForm}
+            onChange={setNotificationForm}
+            onSubmit={handleNotificationSubmit}
+            statusMessage={notificationStatus.message}
+            statusTone={notificationStatus.tone}
+            isSaving={notificationSaving}
+          />
+        </SettingsCard>
+        <SettingsCard icon={<FaBoxes />} title="Inventory Settings">
+          <InventorySettingsPanel
+            values={inventoryForm}
+            onChange={setInventoryForm}
+            onSubmit={handleInventorySubmit}
+            statusMessage={inventoryStatus.message}
+            statusTone={inventoryStatus.tone}
+            isSaving={inventorySaving}
+          />
+        </SettingsCard>
+        <SettingsCard icon={<FaFileExport />} title="Data & Exports">
+          <div>
+            <p className="subtext">
+              Download your sales and inventory data for reporting or backups.
+            </p>
+            {exportStatus.message && (
+              <p className={`form-alert ${exportStatus.tone}`}>
+                {exportStatus.message}
+              </p>
+            )}
+            <button
+              className="button solid"
+              type="button"
+              onClick={handleExport}
+              disabled={exporting}
+            >
+              {exporting ? "Preparing export..." : "Export sales & inventory"}
+            </button>
+          </div>
+        </SettingsCard>
       </div>
     </section>
   );

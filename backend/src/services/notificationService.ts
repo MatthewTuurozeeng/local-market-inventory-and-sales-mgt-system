@@ -40,6 +40,8 @@ const notifyLowStock = async (vendor: VendorRecord, product: ProductRecord) => {
 
   await sendEmail({ to: vendor.email, subject, text, html });
   // SMS notification disabled for now. Only email will be sent for low stock alerts.
+  // await sendSms(vendor.phone, `Low stock alert: "${product.name}" has only ${product.stock} left. Please restock soon.`);
+  
 };
 
 export { notifyLowStock, sendPasswordResetEmail };
