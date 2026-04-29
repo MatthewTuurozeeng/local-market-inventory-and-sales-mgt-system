@@ -12,7 +12,7 @@ A student software engineering project that helps Ghanaian market vendors manage
 ## Tech Stack
 - **Frontend:** Vite + React + TypeScript
 - **Backend:** Node.js + Express
-- **Database:** MongoDB (local or Atlas)
+- **Database:** MongoDB (Atlas)
 - **Auth:** JWT
 - **CI/CD:** GitHub Actions
 
@@ -25,7 +25,7 @@ A student software engineering project that helps Ghanaian market vendors manage
 - Figma: https://www.figma.com/design/uiAnS5NCsPxD9k4GVZ2EGK/Local-Market-Inventory-management?node-id=0-1&t=6xRPywUIBN2bmnH1-0
 
 ## Getting Started
-This repo now includes both the frontend and backend apps.
+This repo includes the frontend and backend apps.
 
 ### Frontend
 ```zsh

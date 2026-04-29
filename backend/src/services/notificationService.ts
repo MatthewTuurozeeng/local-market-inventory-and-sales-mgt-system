@@ -25,26 +25,21 @@ const sendPasswordResetEmail = async (vendor: VendorRecord, token: string) => {
 };
 
 const notifyLowStock = async (vendor: VendorRecord, product: ProductRecord) => {
-  const subject = `Low stock alert: ${product.name}`;
-  const text = `Hi ${vendor.firstName},\n\n${product.name} is low in stock.\nCurrent stock: ${product.stock}\nThreshold: ${product.lowStockThreshold}\n\nPlease restock soon.`;
+  const subject = `Low Stock Notification: Action Required for ${product.name}`;
+  const text = `Dear ${vendor.firstName},\n\nThis is a friendly reminder that your product, "${product.name}", has reached a low stock level.\n\nCurrent Stock: ${product.stock}\nLow Stock Threshold: ${product.lowStockThreshold}\n\nTo avoid running out of stock and missing sales opportunities, please consider restocking this item as soon as possible.\n\nThank you for using Local Market.\n\nBest regards,\nLocal Market Team`;
   const html = `
-    <p>Hi ${vendor.firstName},</p>
-    <p><strong>${product.name}</strong> is low in stock.</p>
-    <ul>
-      <li>Current stock: ${product.stock}</li>
-      <li>Threshold: ${product.lowStockThreshold}</li>
-    </ul>
-    <p>Please restock soon.</p>
+    <p>Dear ${vendor.firstName},</p>
+    <p>This is a friendly reminder that your product, <strong>${product.name}</strong>, has reached a low stock level.</p>
+    <table style="border-collapse:collapse;margin:12px 0;">
+      <tr><td style="padding:4px 8px;font-weight:bold;">Current Stock:</td><td style="padding:4px 8px;">${product.stock}</td></tr>
+      <tr><td style="padding:4px 8px;font-weight:bold;">Low Stock Threshold:</td><td style="padding:4px 8px;">${product.lowStockThreshold}</td></tr>
+    </table>
+    <p>To avoid running out of stock and missing sales opportunities, please consider restocking this item as soon as possible.</p>
+    <p>Thank you for using <strong>Daakye Vendor Space</strong>.<br/>Best regards,<br/>Daakye Vendor Space Team</p>
   `;
 
   await sendEmail({ to: vendor.email, subject, text, html });
-
-  if (vendor.phone) {
-    await sendSms(
-      vendor.phone,
-      `Low stock: ${product.name} (${product.stock} left). Threshold: ${product.lowStockThreshold}.`
-    );
-  }
+  // SMS notification disabled for now. Only email will be sent for low stock alerts.
 };
 
 export { notifyLowStock, sendPasswordResetEmail };
