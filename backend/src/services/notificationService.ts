@@ -2,7 +2,7 @@ import type { ProductRecord, VendorRecord } from "../models/database.ts";
 import { sendEmail } from "./emailService.ts";
 import { sendSms } from "./smsService.ts";
 
-const getFrontendUrl = () => process.env.VITE_API_URL || "http://localhost:5173";
+const getFrontendUrl = () => process.env.CLIENT_URL || "http://localhost:5173";
 
 const sendPasswordResetEmail = async (vendor: VendorRecord, token: string) => {
   const resetLink = `${getFrontendUrl()}/reset-password/confirm?token=${token}`;
