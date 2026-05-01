@@ -2,6 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { registerVendor } from "../lib/api.ts";
 
+// the Signup component provides a registration form for new vendors to create an account on the platform. 
+// it collects both personal and business information, including name, email, phone number, ID type and number, business name, location, primary products, product types, and staff count. 
+// upon successful registration, users are redirected to the dashboard. 
+// error handling is implemented to provide feedback on any issues that arise during the registration process, ensuring a smooth user experience.
 export default function Signup() {
   const navigate = useNavigate();
   const [idType, setIdType] = useState<"ghana" | "voter" | "">("");

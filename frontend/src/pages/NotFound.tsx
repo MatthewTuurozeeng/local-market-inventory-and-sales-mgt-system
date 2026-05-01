@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-export default function NotFound() {
+export default function NotFound() { // the NotFound component serves as a user-friendly 404 error page that is displayed when a user tries to access a route that does not exist within the application.
   return (
     <div className="page-content">
       <section className="section">

@@ -1,3 +1,6 @@
+//the About component provides information about the platform, its purpose, and its features.
+
+
 export default function About() {
   return (
     <div className="page-content">

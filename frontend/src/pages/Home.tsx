@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { API_BASE_URL } from "../lib/api.ts";
+import { API_BASE_URL } from "../lib/api.ts"; // the Home component serves as the landing page for the application, providing an overview of the platform's features and benefits. 
+// It also fetches and displays public statistics about the platform, such as total vendors, sales, and transactions. 
+// The component uses React hooks to manage state and side effects, and it includes a hero section with a call to action, as well as a highlights section that showcases key features of the system.
 
 type PublicStats = {
   totalVendors: number;
@@ -45,7 +47,7 @@ export default function Home() {
     let isMounted = true;
     const fetchStats = async () => {
       try {
-  const response = await fetch(`${API_BASE_URL}/api/public/stats`);
+  const response = await fetch(`${API_BASE_URL}/api/public/stats`); // Fetch public stats from the API
         if (!response.ok) {
           throw new Error("Unable to load stats");
         }
@@ -60,7 +62,7 @@ export default function Home() {
       }
     };
 
-    fetchStats();
+    fetchStats(); // Fetch stats on component mount
     return () => {
       isMounted = false;
     };

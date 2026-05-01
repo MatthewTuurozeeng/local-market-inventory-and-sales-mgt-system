@@ -13,7 +13,10 @@ import ResetPassword from "./ResetPassword.tsx";
 import ResetConfirm from "./ResetConfirm.tsx";
 import Signup from "./Signup.tsx";
 import ProtectedRoute from "../components/ProtectedRoute.tsx";
-
+// the AppRoutes component defines the routing structure of the application using React Router. 
+// it maps specific URL paths to their corresponding components, allowing users to navigate through different sections of the site. 
+// some routes are protected, meaning they require authentication to access (like the dashboard and profile), while others are publicly accessible (like the home page, features, and about). 
+// a catch-all route is included to handle any undefined paths, directing users to a NotFound component that provides a user-friendly 404 error page.
 export default function AppRoutes() {
   return (
     <Routes>

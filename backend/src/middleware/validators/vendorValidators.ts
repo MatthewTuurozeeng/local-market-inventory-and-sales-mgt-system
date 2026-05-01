@@ -1,5 +1,5 @@
 import { body } from "express-validator";
-
+// the updateProfileValidators array defines a set of validation rules for the vendor profile update endpoint.
 const updateProfileValidators = [
   body("firstName").optional().notEmpty(),
   body("middleName").optional().isString(),

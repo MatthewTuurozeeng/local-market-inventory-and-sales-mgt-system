@@ -2,6 +2,10 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { login } from "../lib/api.ts";
 
+// the Login component provides a user interface for vendors to sign in to their accounts. 
+// it includes a form with fields for email and password, along with error handling and loading states to enhance the user experience. 
+// upon successful login, users are redirected to their intended destination (or the dashboard by default). 
+// the component  offers links for password reset and account creation, making it easy for users to access additional authentication-related features.
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();

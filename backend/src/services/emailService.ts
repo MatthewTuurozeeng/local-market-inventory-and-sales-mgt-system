@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 
+// the buildTransport function constructs a nodemailer transport object using SMTP configuration from environment variables. If any required configuration is missing, it returns null to indicate that email sending is not configured.
 const buildTransport = () => {
   const host = process.env.SMTP_HOST;
   const port = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : undefined;

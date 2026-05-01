@@ -25,6 +25,8 @@ const featureItems = [
   },
 ];
 
+// the Features component highlights the key features of the platform in a visually appealing way. 
+// It uses a simple grid layout to display each feature with a title and description, making it easy for users to understand the benefits of using the system. 
 export default function Features() {
   return (
     <div className="page-content">

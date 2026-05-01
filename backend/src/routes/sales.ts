@@ -10,6 +10,7 @@ import {
 import { createSaleValidators } from "../middleware/validators/salesValidators.ts";
 import { notifyLowStock } from "../services/notificationService.ts";
 
+// the sales router defines endpoints for managing sales records. It includes a GET endpoint to list all sales for the authenticated vendor and a POST endpoint to create a new sale. The POST endpoint validates the request body, creates the sale record, updates the product stock, and sends a low stock notification if necessary.
 const router = express.Router();
 
 router.get("/", authenticate, async (req: Request, res: Response) => {

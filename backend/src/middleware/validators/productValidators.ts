@@ -1,5 +1,7 @@
 import { body, param } from "express-validator";
 
+// the createProductValidators array defines a set of validation rules for the product creation endpoint. 
+// it checks that the name, category, and unit fields are not empty, and that the price and stock fields are valid floating-point numbers greater than or equal to 0. 
 const createProductValidators = [
   body("name").notEmpty(),
   body("category").notEmpty(),

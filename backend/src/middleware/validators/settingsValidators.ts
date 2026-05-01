@@ -1,5 +1,6 @@
 import { body } from "express-validator";
 
+// the profileSettingsValidators array defines a set of validation rules for the profile settings update endpoint.
 const profileSettingsValidators = [
   body("vendorName").optional().isString().notEmpty(),
   body("shopName").optional().isString().notEmpty(),
@@ -13,6 +14,7 @@ const profileSettingsValidators = [
   body("storeLogoUrl").optional({ nullable: true, checkFalsy: true }).isString(),
 ];
 
+// the notificationSettingsValidators array defines a set of validation rules for the notification settings update endpoint.
 const notificationSettingsValidators = [
   body("smsEnabled").optional().isBoolean().toBoolean(),
   body("emailEnabled").optional().isBoolean().toBoolean(),

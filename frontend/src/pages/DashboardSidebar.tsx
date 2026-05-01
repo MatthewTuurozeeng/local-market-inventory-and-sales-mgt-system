@@ -1,3 +1,9 @@
+
+
+// provides a consistent navigation and quick analytics panel for the vendor dashboard. 
+// It displays the vendor's profile information, including their avatar and store logo, and offers navigation buttons for different sections of the dashboard (Overview, Inventory, Sales, Analytics, Reports, Settings). 
+// it includes a quick analytics section that shows key metrics like total revenue, units sold, and sales count. 
+// the component is designed to be reusable across different pages of the dashboard, ensuring a cohesive user experience.
 import {
   FiBarChart2,
   FiBox,

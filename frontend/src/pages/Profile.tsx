@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  API_BASE_URL,
+  API_BASE_URL, 
   getProfile,
   updateProfile,
   uploadAvatar,
@@ -23,6 +23,11 @@ const emptyProfile: VendorProfile = {
   otherProductTypes: "",
 };
 
+// the Profile component allows vendors to view and update their personal and business information. 
+// it fetches the vendor's profile data from the API and populates a form with the existing information. 
+// vendors can edit their details, including their name, email, phone number, business name, location, primary products, staff count, and product types. 
+// the component also supports avatar uploads, allowing vendors to personalize their profile with an image. 
+// error handling and status messages provide feedback on the success or failure of profile updates and avatar uploads.
 export default function Profile() {
   const [profile, setProfile] = useState<VendorProfile>(emptyProfile);
   const [loading, setLoading] = useState(true);

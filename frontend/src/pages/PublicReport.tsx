@@ -2,6 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { API_BASE_URL } from "../lib/api.ts";
 
+// the PublicReport component serves as a public-facing page that showcases key statistics and highlights about the platform's impact. 
+// it fetches public statistics from the API and displays them in a visually appealing way, along with insights into how vendors are benefiting from using the platform. 
+// the component includes a hero section with a call to action for new vendors to join, as well as sections that highlight the real-time performance signals and overall platform impact. 
+// error handling is implemented to manage any issues that arise during data fetching, ensuring a smooth user experience even when there are problems with loading the statistics.
 type PublicStats = {
   totalVendors: number;
   totalSales: number;

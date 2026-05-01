@@ -9,6 +9,11 @@ type LayoutProps = {
   children: ReactNode;
 };
 
+// the Layout component serves as the main structure for the application, providing a consistent header and footer across all pages. 
+// it manages the authentication state to conditionally render navigation links and actions based on whether the user is logged in or not. 
+// the header includes a brand logo, navigation links to different sections of the site (Features, How It Works, About), and user actions (Login, Get Started, Dashboard, Logout). 
+// it also incorporates a theme toggle button that allows users to switch between light and dark modes. 
+// the footer provides additional navigation links and copyright information.
 export default function Layout({ children }: LayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();

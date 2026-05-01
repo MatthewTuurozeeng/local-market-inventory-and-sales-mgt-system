@@ -1,3 +1,7 @@
+
+// The GetStarted component provides a simple, step-by-step guide for new users to quickly set up their digital stall and start selling. 
+// It uses a clean layout with clear instructions to help users understand the onboarding process and get started with the platform in just a few minutes.
+
 export default function GetStarted() {
   return (
     <div className="page-content">

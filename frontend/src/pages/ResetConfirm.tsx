@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { confirmPasswordReset } from "../lib/api.ts";
 
+//
 export default function ResetConfirm() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();

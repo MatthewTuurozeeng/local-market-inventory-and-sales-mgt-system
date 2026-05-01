@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+
+
+import { useEffect, useMemo, useState } from "react"; // react hooks for managing component state and side effects
+import { useNavigate } from "react-router-dom"; // for programmatic navigation between routes
 import {
   adjustStock,
   createProduct,
@@ -92,6 +94,10 @@ const mockSales = [
     soldAt: new Date(Date.now() - 2 * 86400000).toISOString(),
   },
 ];
+
+// the dashboard component is the main interface for vendors to manage their inventory, record sales, and view analytics.
+//  It uses various React hooks to manage state and side effects, and it interacts with the backend API to fetch and update data. 
+// The dashboard includes sections for an overview of sales activity, inventory management, sales recording, analytics, report generation, and settings. 
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -281,7 +287,10 @@ export default function Dashboard() {
       setError((err as Error).message || "Unable to add product.");
     }
   };
-
+// the handleProductSubmit function is called when the vendor submits the form to add a new product. 
+// It prevents the default form submission behavior, clears any existing error messages, and then attempts to create a new product using the createProduct API function. 
+// If the product is created successfully, it resets the form fields and reloads the dashboard data to reflect the new product. 
+// If there is an error during this process, it sets an error message to inform the user.
   const handleSaleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError("");
@@ -464,6 +473,7 @@ export default function Dashboard() {
               </div>
             </section>
           )}
+          
 
           {activeSection === "inventory" && (
             <section className="section dashboard-grid">

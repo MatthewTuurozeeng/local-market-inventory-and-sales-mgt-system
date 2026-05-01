@@ -13,6 +13,9 @@ const steps = [
   },
 ];
 
+// the HowItWorks component provides a clear and concise overview of the key steps involved in using the platform. 
+// it breaks down the onboarding process into three simple steps, making it easy for new users to understand how to get started and what to expect from the system. 
+// each step is presented in a visually appealing way, with a title and description that highlights the main actions users need to take to successfully use the platform.
 export default function HowItWorks() {
   return (
     <div className="page-content">
@@ -25,7 +28,7 @@ export default function HowItWorks() {
             <article key={step.title} className="panel step">
               <span className="step-index">0{index + 1}</span>
               <h3>{step.title}</h3>
-              <p>{step.description}</p>
+              <p>{step.description}</p> 
             </article>
           ))}
         </div>
