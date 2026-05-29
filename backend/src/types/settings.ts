@@ -15,3 +15,6 @@ export interface VendorSettings {
   notifications: NotificationSettings;
   inventory: InventorySettings;
 }
+
+
+
